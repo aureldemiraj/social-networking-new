@@ -1,0 +1,21 @@
+{
+  "name": "socialnetworking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prisma": "^4.4.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.4.0",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^8.5.1"
+  }
+}
