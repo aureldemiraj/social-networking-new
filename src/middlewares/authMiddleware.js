@@ -1,0 +1,105 @@
+import { promisify } from 'util'
+import jwt from 'jsonwebtoken';
+
+import AppError from './../common/appError.js';
+import { catchAsync } from './../common/catchAsync.js';
+import { getEventById } from './../repositories/eventRepository.js';
+import { getPostById } from './../repositories/postRepository.js';
+import { getCurrentUser } from './../repositories/userRepository.js';
+import { changedPasswordAfter } from './../services/userService.js';
+import { userCommunities } from './../services/communityService.js';
+
+export const protect = catchAsync(async (req, res, next) => {
+
+    // 1) Getting token and check if it's there
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.jwt) {
+        token = req.cookies.jwt;
+    }
+
+
+    if (!token) {
+        return next(new AppError('You are not logged in.', 401))
+    }
+
+    // 2) Verificate token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    // 3) Check if user still exists
+    const currentUser = await getCurrentUser(decoded.id);
+
+    if (!currentUser) {
+        return next(new AppError('The user belonging to this token does no longer exist', 401))
+    }
+
+    // 4) Check if user changed password after the token was issued
+    if (currentUser.passwordChangedAt) {
+        if (changedPasswordAfter(decoded.iat, currentUser.passwordChangedAt)) {
+            return next(new AppError('User recently changed password! Please login again', 401))
+        }
+    }
+
+    req.userId = decoded.id;
+    next();
+})
+
+export const restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return next(new AppError('You do not have permission to perform this action!', 403))
+        }
+        next();
+    }
+}
+
+export const checkPostAuthor = catchAsync(async (req, res, next) => {
+    const postId = req.params.postId;
+    const userId = req.userId;
+
+    const post = await getPostById(postId);
+
+    if (!post) {
+        return next(new AppError('No post found with that ID', 404));
+    }
+
+    if (!(post.authorId === userId || req.user.role === 'ADMIN')) {
+        return next(new AppError('You can only edit or delete your posts', 404))
+    }
+
+    next();
+})
+
+export const checkEventOrganizer = catchAsync(async (req, res, next) => {
+    const eventId = req.params.eventId;
+    const userId = req.userId;
+
+    const event = await getEventById(eventId);
+
+    if (!event) {
+        return next(new AppError('No event found with that ID', 404));
+    }
+
+    if (!(event.eventOrganizer === userId || req.user.role === 'ADMIN')) {
+        return next(new AppError('You can only edit or delete your events', 404))
+    }
+
+    next();
+})
+
+export const checkIfJoin = catchAsync(async (req, res, next) => {
+    const communityId = req.params.communityId;
+    const userId = req.userId;
+
+    const userIncommunity = await userCommunities(userId, communityId);
+
+    if (!userIncommunity) {
+        return next(new AppError('You should join the community to take this action', 403))
+    }
+
+    next()
+
+})
+

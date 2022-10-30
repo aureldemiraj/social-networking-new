@@ -1,19 +1,21 @@
 // const { PrismaClient } = require('@prisma/client');
 import { PrismaClient } from '@prisma/client';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 
-import userRouter from './routes/userRoutes.js';
-import communityRouter from './routes/communityRoutes.js';
-import eventRouter from './routes/eventRoutes.js';
-import postRouter from './routes/postRoutes.js';
-import AppError from './utils/appError.js';
-import globalErrorHandler from './controllers/errorController.js';
+import userRouter from './src/routes/userRoutes.js';
+import communityRouter from './src/routes/communityRoutes.js';
+import eventRouter from './src/routes/eventRoutes.js';
+import postRouter from './src/routes/postRoutes.js';
+import AppError from './src/common/appError.js';
+import globalErrorHandler from './src/middlewares/errorMiddleware.js';
 
 
 const prisma = new PrismaClient();
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 const port = 3000;
 app.listen(port, () => {

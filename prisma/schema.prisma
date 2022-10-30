@@ -15,7 +15,6 @@ model User {
   fullName          String               @db.VarChar(100)
   email             String               @unique
   password          String
-  passwordConfirm   String?
   isActive          Boolean              @default(true)
   birthDate         DateTime             @db.Date
   registeredDate    DateTime             @default(now())
@@ -32,7 +31,7 @@ model User {
 
 model Community {
   id          String               @id @default(uuid())
-  name        String
+  name        String               @unique
   description String
   createdDate DateTime             @default(now())
   events      Event[]

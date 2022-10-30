@@ -1,7 +1,16 @@
 import express from 'express';
 
-import { getCommunities, createCommunity, getCommunity, joinCommunity, leaveCommunity } from './../controllers/communityController.js';
-import { protect } from './../controllers/authController.js';
+import {
+    getCommunities,
+    createCommunity,
+    getCommunity,
+    joinCommunity,
+    leaveCommunity,
+    largestCommunites,
+    mostActiveCommunities
+
+} from './../controllers/communityController.js';
+import { protect, restrictTo } from './../middlewares/authMiddleware.js';
 
 import eventRouter from './eventRoutes.js';
 import postRouter from './postRoutes.js';
@@ -14,11 +23,15 @@ router.use('/:communityId/posts', postRouter);
 router
     .route('/')
     .get(getCommunities)
-    .post(createCommunity);
+    .post(protect, restrictTo('ADMIN'), createCommunity);
+
+router.get('/largestCommunities', largestCommunites);
+router.get('/mostActiveCommunities', mostActiveCommunities);
 
 router
     .route('/:communityId')
     .get(getCommunity);
+
 
 router.use(protect);
 
