@@ -1,20 +1,29 @@
 import express from 'express';
 
-import { getPosts, createPost, getPost, updatePost, deletePost } from './../controllers/postController.js';
-import { protect, restrictTo, checkPostAuthor, checkIfJoin } from './../middlewares/authMiddleware.js';
+import {
+    checkPostAuthor,
+    checkIfJoin
+} from './../middlewares/authMiddleware.js';
+import {
+    getPosts,
+    createPost,
+    getPost,
+    updatePost,
+    deletePost
+} from './../controllers/postController.js';
 
 const router = express.Router({ mergeParams: true });
 
-router
-    .route('/')
-    .get(getPosts)
-    .post(protect, checkIfJoin, createPost);
+router.get('/', getPosts);
+
+router.use(checkIfJoin);
+
+router.post('/', createPost);
 
 router
     .route('/:postId')
     .get(getPost)
-    .put(protect, checkPostAuthor, updatePost)
-    .delete(protect, checkPostAuthor, deletePost);
-
+    .put(checkPostAuthor, updatePost)
+    .delete(checkPostAuthor, deletePost);
 
 export default router;

@@ -3,22 +3,26 @@ import bcrypt from 'bcryptjs';
 
 import AppError from './../common/appError.js';
 import { catchAsync } from './../common/catchAsync.js';
-import { createSendToken, correctPassword, createUser } from './../services/userService.js';
-import { getUserbyEmail, getUserbyId } from './../repositories/userRepository.js';
+import {
+    getUserbyEmail,
+    getUserbyId,
+    createSendToken,
+    correctPassword,
+    createUser
+} from './../services/userService.js';
 
 const prisma = new PrismaClient();
 
 export const getUsers = async (req, res) => {
-    const users = await prisma.user.findMany()
+    const users = await prisma.user.findMany();
 
     res.status(200).json({
         message: 'Success',
         data: users
-    })
-}
+    });
+};
 
 export const register = catchAsync(async (req, res, next) => {
-    // const { fullName, email, password, birthDate, education } = req.body;
     const payload = req.body;
 
     // todo 1) and 2)
@@ -32,7 +36,7 @@ export const register = catchAsync(async (req, res, next) => {
     const oldUser = await getUserbyEmail(payload.email);
 
     if (oldUser) {
-        return next(new AppError('User already exists. Please login', 409))
+        return next(new AppError('User already exists. Please login', 400))
     }
 
     const newUser = await createUser(payload);
@@ -52,7 +56,7 @@ export const login = catchAsync(async (req, res, next) => {
     const user = await getUserbyEmail(email);
 
     if (!user || !(await correctPassword(password, user.password))) {
-        return next(new AppError('Incorrect email or password', 401))
+        return next(new AppError('Incorrect email or password', 400))
     }
 
     createSendToken(user, 200, res);
@@ -69,7 +73,7 @@ export const getUser = catchAsync(async (req, res, next) => {
     const user = await getUserbyId(userId);
 
     if (!user) {
-        return next(new AppError('No user found with that ID', 400))
+        return next(new AppError('No user found with that ID', 404))
     }
 
     res.status(200).json({
@@ -77,3 +81,17 @@ export const getUser = catchAsync(async (req, res, next) => {
         data: user
     })
 })
+
+export const forgotPassword = catchAsync(async (req, res, next) => {
+    const payload = req.body;
+
+    const user = await getUserbyEmail(payload.email);
+
+    if (!user) {
+        return next(new AppError('No user found with that ID', 404))
+    }
+});
+
+export const resetPassword = catchAsync(async (req, res, next) => {
+
+});
