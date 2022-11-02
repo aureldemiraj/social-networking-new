@@ -1,7 +1,13 @@
-import { catchAsync } from './../common/catchAsync.js'
-import AppError from './../common/appError.js'
-import { getAllPosts, getPostById, createNewPost, updatePostbyId, deletePostbyId } from './../repositories/postRepository.js';
-import { checkPostRequest } from "../services/postService.js";
+import { catchAsync } from './../common/catchAsync.js';
+import AppError from './../common/appError.js';
+import {
+    getAllPosts,
+    getPostById,
+    createNewPost,
+    updatePostbyId,
+    deletePostbyId,
+    checkPostRequest
+} from "../services/postService.js";
 
 
 export const getPosts = catchAsync(async (req, res, next) => {
@@ -13,8 +19,8 @@ export const getPosts = catchAsync(async (req, res, next) => {
         status: 'success',
         results: allPosts.length,
         data: allPosts
-    })
-})
+    });
+});
 
 export const createPost = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
@@ -25,13 +31,13 @@ export const createPost = catchAsync(async (req, res, next) => {
         return next(new AppError('Please fill in all required fields.', 400))
     }
 
-    const newPost = await createNewPost(payload, communityId, authorId)
+    const newPost = await createNewPost(payload, communityId, authorId);
 
     res.status(201).json({
         status: 'success',
         data: newPost
-    })
-})
+    });
+});
 
 export const getPost = catchAsync(async (req, res, next) => {
     const postId = req.params.postId;
@@ -45,8 +51,8 @@ export const getPost = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         data: post
-    })
-})
+    });
+});
 
 
 export const updatePost = catchAsync(async (req, res, next) => {
@@ -68,7 +74,7 @@ export const updatePost = catchAsync(async (req, res, next) => {
         status: 'success',
         data: updatedPost
     });
-})
+});
 
 export const deletePost = catchAsync(async (req, res, next) => {
     const postId = req.params.postId;
@@ -83,4 +89,4 @@ export const deletePost = catchAsync(async (req, res, next) => {
         status: 'success',
         data: null
     });
-})
+});

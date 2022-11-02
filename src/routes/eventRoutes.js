@@ -1,19 +1,43 @@
 import express from 'express';
 
-import { getEvents, createEvent, getEvent, updateEvent, deleteEvent } from './../controllers/eventController.js';
-import { protect, restrictTo, checkEventOrganizer, checkIfJoin } from './../middlewares/authMiddleware.js';
+import {
+    checkEventOrganizer,
+    checkIfJoin,
+    protect
+} from './../middlewares/authMiddleware.js';
+import {
+    getEvents,
+    createEvent,
+    getEvent,
+    updateEvent,
+    deleteEvent,
+    confirmGoing,
+    cancelConfirmation,
+    getEventParticipants,
+    myEvents,
+    subscribedEvents
+} from './../controllers/eventController.js';
 
 const router = express.Router({ mergeParams: true });
 
-router
-    .route('/')
-    .get(getEvents)
-    .post(protect, checkIfJoin, createEvent);
+router.get('/', getEvents);
+
+router.get('/myEvents', protect, myEvents);
+router.get('/subscribedEvents', protect, subscribedEvents);
+
+router.use(checkIfJoin);
+
+router.post('/', createEvent);
 
 router
     .route('/:eventId')
     .get(getEvent)
-    .put(protect, checkEventOrganizer, updateEvent)
-    .delete(protect, checkEventOrganizer, deleteEvent);
+    .put(checkEventOrganizer, updateEvent)
+    .delete(checkEventOrganizer, deleteEvent);
+
+router.post('/:eventId/going', confirmGoing);
+router.post('/:eventId/cancel', cancelConfirmation);
+
+router.get('/:eventId/participants', getEventParticipants);
 
 export default router;

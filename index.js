@@ -2,6 +2,8 @@
 import { PrismaClient } from '@prisma/client';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 import userRouter from './src/routes/userRoutes.js';
 import communityRouter from './src/routes/communityRoutes.js';
@@ -14,7 +16,16 @@ import globalErrorHandler from './src/middlewares/errorMiddleware.js';
 const prisma = new PrismaClient();
 const app = express();
 
-app.use(express.json());
+app.use(helmet());
+
+const limiter = rateLimit({
+    max: 100,
+    windowMs: 60 * 1000,
+    message: 'Too many requests from this IP, please try again in a minute!'
+});
+app.use(limiter);
+
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
 const port = 3000;

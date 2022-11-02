@@ -1,7 +1,19 @@
-import { catchAsync } from './../common/catchAsync.js'
-import AppError from './../common/appError.js'
-import { createNewEvent, deleteEventbyId, getAllEvents, getEventById, updateEventbyId } from "../repositories/eventRepository.js";
-import { checkEventRequest } from "../services/eventService.js";
+import { catchAsync } from './../common/catchAsync.js';
+import AppError from './../common/appError.js';
+import {
+    createNewEvent,
+    deleteEventbyId,
+    getAllEvents,
+    getEventById,
+    updateEventbyId,
+    goingToEvent,
+    notGoingToEvent,
+    getAllEventParticipants,
+    checkEventRequest,
+    hasUserConfirmed,
+    getMyEvents,
+    getSubscribedEvents
+} from "../services/eventService.js";
 
 
 export const getEvents = catchAsync(async (req, res, next) => {
@@ -13,8 +25,8 @@ export const getEvents = catchAsync(async (req, res, next) => {
         status: 'success',
         results: allEvents.length,
         data: allEvents
-    })
-})
+    });
+});
 
 export const createEvent = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
@@ -25,13 +37,13 @@ export const createEvent = catchAsync(async (req, res, next) => {
         return next(new AppError('Please fill in all required fields.', 400))
     }
 
-    const newEvent = await createNewEvent(payload, communityId, organizerId)
+    const newEvent = await createNewEvent(payload, communityId, organizerId);
 
     res.status(201).json({
         status: 'success',
         data: newEvent
-    })
-})
+    });
+});
 
 export const getEvent = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
@@ -45,8 +57,8 @@ export const getEvent = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         data: event
-    })
-})
+    });
+});
 
 export const updateEvent = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
@@ -66,7 +78,7 @@ export const updateEvent = catchAsync(async (req, res, next) => {
         status: 'success',
         data: updatedEvent
     });
-})
+});
 
 
 export const deleteEvent = catchAsync(async (req, res, next) => {
@@ -82,4 +94,90 @@ export const deleteEvent = catchAsync(async (req, res, next) => {
         status: 'success',
         data: null
     });
-})
+});
+
+export const confirmGoing = catchAsync(async (req, res, next) => {
+    const eventId = req.params.eventId;
+    const userId = req.userId;
+
+    const event = await getEventById(eventId);
+
+    if (!event) {
+        return next(new AppError('No event found with that ID', 404))
+    }
+
+    const userConfirmed = await hasUserConfirmed(userId, eventId);
+
+    if (userConfirmed) {
+        return next(new AppError('You have already confirm.', 400))
+    }
+
+    const result = await goingToEvent(eventId, userId);
+
+    res.status(200).json({
+        status: 'success',
+        data: result
+    });
+});
+
+export const cancelConfirmation = catchAsync(async (req, res, next) => {
+    const eventId = req.params.eventId;
+    const userId = req.userId;
+
+    const event = await getEventById(eventId);
+
+    if (!event) {
+        return next(new AppError('No event found with that ID', 404))
+    }
+
+    const userConfirmed = await hasUserConfirmed(userId, eventId);
+
+    if (!userConfirmed) {
+        return next(new AppError('You have not confirmed yet.', 400))
+    }
+
+    const result = await notGoingToEvent(eventId, userId);
+
+    res.status(200).json({
+        status: 'success',
+        data: result
+    });
+});
+
+export const getEventParticipants = catchAsync(async (req, res, next) => {
+    const eventId = req.params.eventId;
+
+    const event = await getEventById(eventId);
+
+    if (!event) {
+        return next(new AppError('No event found with that ID', 404))
+    }
+
+    const result = await getAllEventParticipants(eventId);
+
+    res.status(200).json({
+        status: 'success',
+        data: result
+    });
+});
+
+export const myEvents = catchAsync(async (req, res, next) => {
+    const userId = req.userId;
+    const myEvents = await getMyEvents(userId);
+
+    res.status(200).json({
+        status: 'success',
+        data: myEvents
+    })
+});
+
+export const subscribedEvents = catchAsync(async (req, res, next) => {
+    const userId = req.userId;
+
+    const subscribedEvents = await getSubscribedEvents(userId);
+
+    res.status(200).json({
+        status: 'success',
+        data: subscribedEvents
+    })
+});

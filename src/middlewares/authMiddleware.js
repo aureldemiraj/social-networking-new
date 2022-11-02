@@ -3,11 +3,10 @@ import jwt from 'jsonwebtoken';
 
 import AppError from './../common/appError.js';
 import { catchAsync } from './../common/catchAsync.js';
-import { getEventById } from './../repositories/eventRepository.js';
-import { getPostById } from './../repositories/postRepository.js';
-import { getCurrentUser } from './../repositories/userRepository.js';
-import { changedPasswordAfter } from './../services/userService.js';
-import { userCommunities } from './../services/communityService.js';
+import { getEventById } from './../services/eventService.js';
+import { getPostById } from './../services/postService.js';
+import { getUserbyId, changedPasswordAfter } from './../services/userService.js';
+import { isUserInCommunity } from './../services/communityService.js';
 
 export const protect = catchAsync(async (req, res, next) => {
 
@@ -20,7 +19,6 @@ export const protect = catchAsync(async (req, res, next) => {
         token = req.cookies.jwt;
     }
 
-
     if (!token) {
         return next(new AppError('You are not logged in.', 401))
     }
@@ -29,7 +27,7 @@ export const protect = catchAsync(async (req, res, next) => {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
     // 3) Check if user still exists
-    const currentUser = await getCurrentUser(decoded.id);
+    const currentUser = await getUserbyId(decoded.id);
 
     if (!currentUser) {
         return next(new AppError('The user belonging to this token does no longer exist', 401))
@@ -42,13 +40,14 @@ export const protect = catchAsync(async (req, res, next) => {
         }
     }
 
-    req.userId = decoded.id;
+    req.userId = currentUser.id;
+    req.userRole = currentUser.role;
     next();
 })
 
 export const restrictTo = (...roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
+    return async (req, res, next) => {
+        if (!roles.includes(req.userRole)) {
             return next(new AppError('You do not have permission to perform this action!', 403))
         }
         next();
@@ -65,7 +64,7 @@ export const checkPostAuthor = catchAsync(async (req, res, next) => {
         return next(new AppError('No post found with that ID', 404));
     }
 
-    if (!(post.authorId === userId || req.user.role === 'ADMIN')) {
+    if (!(post.authorId === userId || req.userRole === 'ADMIN')) {
         return next(new AppError('You can only edit or delete your posts', 404))
     }
 
@@ -82,7 +81,7 @@ export const checkEventOrganizer = catchAsync(async (req, res, next) => {
         return next(new AppError('No event found with that ID', 404));
     }
 
-    if (!(event.eventOrganizer === userId || req.user.role === 'ADMIN')) {
+    if (!(event.eventOrganizer === userId || req.userRole === 'ADMIN')) {
         return next(new AppError('You can only edit or delete your events', 404))
     }
 
@@ -93,13 +92,12 @@ export const checkIfJoin = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
     const userId = req.userId;
 
-    const userIncommunity = await userCommunities(userId, communityId);
+    const userInCommunity = await isUserInCommunity(userId, communityId);
 
-    if (!userIncommunity) {
-        return next(new AppError('You should join the community to take this action', 403))
+    if (!userInCommunity) {
+        return next(new AppError('You should join the community to perform this action', 403))
     }
 
-    next()
-
+    next();
 })
 
