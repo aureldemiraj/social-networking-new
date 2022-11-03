@@ -2,10 +2,6 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const checkPostRequest = (payload) => {
-    return payload.title && payload.body
-};
-
 export const getAllPosts = async (communityId) => {
     let filters = {};
 
@@ -15,7 +11,16 @@ export const getAllPosts = async (communityId) => {
         };
     }
 
-    const allPosts = await prisma.post.findMany(filters);
+    const allPosts = await prisma.post.findMany({
+        filters,
+        select: {
+            id: true,
+            title: true,
+            body: true,
+            authorId: true,
+            communityId: true
+        }
+    });
 
     return allPosts;
 };
@@ -29,6 +34,13 @@ export const createNewPost = async (payload, communityId, authorId) => {
             body,
             authorId,
             communityId
+        },
+        select: {
+            id: true,
+            title: true,
+            body: true,
+            authorId: true,
+            communityId: true
         }
     });
 
@@ -39,6 +51,13 @@ export const getPostById = async (id) => {
     const post = await prisma.post.findUnique({
         where: {
             id
+        },
+        select: {
+            id: true,
+            title: true,
+            body: true,
+            authorId: true,
+            communityId: true
         }
     });
 
@@ -55,6 +74,13 @@ export const updatePostbyId = async (payload, id) => {
         data: {
             title,
             body,
+        },
+        select: {
+            id: true,
+            title: true,
+            body: true,
+            authorId: true,
+            communityId: true
         }
     });
 
@@ -65,6 +91,13 @@ export const deletePostbyId = async (id) => {
     const post = await prisma.post.delete({
         where: {
             id
+        },
+        select: {
+            id: true,
+            title: true,
+            body: true,
+            authorId: true,
+            communityId: true
         }
     });
 

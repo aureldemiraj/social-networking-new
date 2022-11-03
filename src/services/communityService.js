@@ -2,25 +2,6 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const checkCommunityRequest = (payload) => {
-    return payload.name && payload.description
-};
-
-export const isUserInCommunity = async (userId, communityId) => {
-    let communities = await prisma.usersOnCommunities.findMany({
-        where: {
-            userId: userId
-        },
-        select: {
-            communityId: true
-        }
-    });
-
-    communities = communities.map(el => el.communityId);
-
-    return communities.includes(communityId)
-};
-
 export const getAllCommunities = async () => {
     const allCommunities = await prisma.community.findMany({
         select: {
@@ -32,7 +13,6 @@ export const getAllCommunities = async () => {
 
     return allCommunities
 };
-
 
 export const getCommunityByName = async (name) => {
     const community = await prisma.community.findUnique({
@@ -102,6 +82,11 @@ export const leaveCommunitybyId = async (userId, communityId) => {
     const goneUser = await prisma.usersOnCommunities.delete({
         where: {
             communityUsers: { userId, communityId }
+        },
+        select: {
+            communityId: true,
+            userId: true,
+            joinedAt: true
         }
     });
 
@@ -192,6 +177,10 @@ export const isUserJoined = async (userId, communityId) => {
     const isUserJoined = await prisma.usersOnCommunities.findUnique({
         where: {
             communityUsers: { userId, communityId }
+        },
+        select: {
+            communityId: true,
+            userId: true
         }
     });
 
@@ -199,18 +188,20 @@ export const isUserJoined = async (userId, communityId) => {
 };
 
 export const getMyCommunities = async (userId) => {
-    const myCommunities = await prisma.usersOnCommunities.findMany({
+    const myCommunities = await prisma.community.findMany({
         where: {
-            userId
-        },
-        include: {
-            community: {
-                select: {
-                    id: true,
-                    name: true,
-                    description: true
+            users: {
+                some: {
+                    userId
                 }
             }
-        }
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true
+        },
     })
-}
+
+    return myCommunities
+};

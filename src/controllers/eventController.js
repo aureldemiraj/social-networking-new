@@ -6,15 +6,14 @@ import {
     getAllEvents,
     getEventById,
     updateEventbyId,
-    goingToEvent,
-    notGoingToEvent,
-    getAllEventParticipants,
-    checkEventRequest,
-    hasUserConfirmed,
+    subscribeEvent,
+    unsubscribeEvent,
+    getAllEventSubscribers,
+    isUserSubscribed,
     getMyEvents,
     getSubscribedEvents
 } from "../services/eventService.js";
-
+import createRequest from './../validations/createEventRequest.js';
 
 export const getEvents = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
@@ -31,11 +30,7 @@ export const getEvents = catchAsync(async (req, res, next) => {
 export const createEvent = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
     const organizerId = req.userId;
-    const payload = req.body;
-
-    if (!checkEventRequest(payload)) {
-        return next(new AppError('Please fill in all required fields.', 400))
-    }
+    const payload = await createRequest.validateAsync(req.body);
 
     const newEvent = await createNewEvent(payload, communityId, organizerId);
 
@@ -62,11 +57,7 @@ export const getEvent = catchAsync(async (req, res, next) => {
 
 export const updateEvent = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
-    const payload = req.body;
-
-    if (!checkEventRequest(payload)) {
-        return next(new AppError('Please fill in all required fields.', 400))
-    }
+    const payload = await createRequest(req.body);
 
     const updatedEvent = await updateEventbyId(payload, eventId);
 
@@ -96,7 +87,7 @@ export const deleteEvent = catchAsync(async (req, res, next) => {
     });
 });
 
-export const confirmGoing = catchAsync(async (req, res, next) => {
+export const subscribe = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
     const userId = req.userId;
 
@@ -106,13 +97,13 @@ export const confirmGoing = catchAsync(async (req, res, next) => {
         return next(new AppError('No event found with that ID', 404))
     }
 
-    const userConfirmed = await hasUserConfirmed(userId, eventId);
+    const userSubscribed = await isUserSubscribed(userId, eventId);
 
-    if (userConfirmed) {
+    if (userSubscribed) {
         return next(new AppError('You have already confirm.', 400))
     }
 
-    const result = await goingToEvent(eventId, userId);
+    const result = await subscribeEvent(eventId, userId);
 
     res.status(200).json({
         status: 'success',
@@ -120,7 +111,7 @@ export const confirmGoing = catchAsync(async (req, res, next) => {
     });
 });
 
-export const cancelConfirmation = catchAsync(async (req, res, next) => {
+export const unsubscribe = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
     const userId = req.userId;
 
@@ -130,13 +121,13 @@ export const cancelConfirmation = catchAsync(async (req, res, next) => {
         return next(new AppError('No event found with that ID', 404))
     }
 
-    const userConfirmed = await hasUserConfirmed(userId, eventId);
+    const userSubscribed = await isUserSubscribed(userId, eventId);
 
-    if (!userConfirmed) {
+    if (!userSubscribed) {
         return next(new AppError('You have not confirmed yet.', 400))
     }
 
-    const result = await notGoingToEvent(eventId, userId);
+    const result = await unsubscribeEvent(eventId, userId);
 
     res.status(200).json({
         status: 'success',
@@ -144,7 +135,7 @@ export const cancelConfirmation = catchAsync(async (req, res, next) => {
     });
 });
 
-export const getEventParticipants = catchAsync(async (req, res, next) => {
+export const getEventSubscribers = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
 
     const event = await getEventById(eventId);
@@ -153,7 +144,7 @@ export const getEventParticipants = catchAsync(async (req, res, next) => {
         return next(new AppError('No event found with that ID', 404))
     }
 
-    const result = await getAllEventParticipants(eventId);
+    const result = await getAllEventSubscribers(eventId);
 
     res.status(200).json({
         status: 'success',
