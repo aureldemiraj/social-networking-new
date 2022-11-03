@@ -2,10 +2,6 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const checkEventRequest = (payload) => {
-    return payload.name && payload.description && payload.location && payload.eventTime
-};
-
 export const getAllEvents = async (communityId) => {
     const filters = [
         {
@@ -24,6 +20,15 @@ export const getAllEvents = async (communityId) => {
         },
         orderBy: {
             eventTime: 'asc'
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            location: true,
+            eventTime: true,
+            eventOrganizer: true,
+            communityId: true,
         }
     });
 
@@ -41,6 +46,15 @@ export const createNewEvent = async (payload, communityId, organizerId) => {
             eventTime,
             eventOrganizer: organizerId,
             communityId: communityId
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            location: true,
+            eventTime: true,
+            eventOrganizer: true,
+            communityId: true
         }
     });
 
@@ -51,6 +65,15 @@ export const getEventById = async (id) => {
     const event = await prisma.event.findUnique({
         where: {
             id
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            location: true,
+            eventTime: true,
+            eventOrganizer: true,
+            communityId: true
         }
     });
 
@@ -69,6 +92,15 @@ export const updateEventbyId = async (payload, id) => {
             description,
             location,
             eventTime,
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            location: true,
+            eventTime: true,
+            eventOrganizer: true,
+            communityId: true
         }
     });
 
@@ -79,13 +111,22 @@ export const deleteEventbyId = async (id) => {
     const event = await prisma.event.delete({
         where: {
             id
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            location: true,
+            eventTime: true,
+            eventOrganizer: true,
+            communityId: true
         }
     });
 
     return event
 };
 
-export const goingToEvent = async (eventId, participantId) => {
+export const subscribeEvent = async (eventId, participantId) => {
     const result = await prisma.eventParticipants.create({
         data: {
             eventId,
@@ -96,7 +137,7 @@ export const goingToEvent = async (eventId, participantId) => {
     return result
 };
 
-export const notGoingToEvent = async (eventId, participantId) => {
+export const unsubscribeEvent = async (eventId, participantId) => {
     const result = await prisma.eventParticipants.delete({
         where: {
             eventId_participantId: { eventId, participantId }
@@ -106,32 +147,33 @@ export const notGoingToEvent = async (eventId, participantId) => {
     return result
 };
 
-export const getAllEventParticipants = async (eventId) => {
-    const result = await prisma.eventParticipants.findMany({
-        where: {
-            eventId
-        },
-        include: {
-            participant: {
-                select: {
-                    id: true,
-                    fullName: true
-                }
-            }
-        }
-    });
-
-    return result
-};
-
-export const hasUserConfirmed = async (userId, eventId) => {
-    const hasUserConfirmed = await prisma.eventParticipants.findUnique({
+export const isUserSubscribed = async (userId, eventId) => {
+    const isUserSubscribed = await prisma.eventParticipants.findUnique({
         where: {
             eventId_participantId: { eventId, userId }
         }
     });
 
-    return hasUserConfirmed
+    return isUserSubscribed
+};
+
+export const getAllEventSubscribers = async (eventId) => {
+    const subscribers = await prisma.user.findMany({
+        where: {
+            participantIn: {
+                some: {
+                    eventId
+                }
+            }
+        },
+        select: {
+            id: true,
+            email: true,
+            fullName: true
+        }
+    });
+
+    return subscribers
 };
 
 export const getMyEvents = async (userId) => {
@@ -142,6 +184,7 @@ export const getMyEvents = async (userId) => {
         select: {
             id: true,
             name: true,
+            description: true,
             location: true,
             eventTime: true,
             eventOrganizer: true,
@@ -153,18 +196,28 @@ export const getMyEvents = async (userId) => {
 }
 
 export const getSubscribedEvents = async (userId) => {
-    const subscribedEvents = await prisma.eventParticipants.findMany({
+    const subscribedEvents = await prisma.event.findMany({
         where: {
-            participantId: userId
-        },
-        include: {
-            event: {
-                select: {
-                    id: true,
-                    name: true,
-                    eventTime: true
+            eventTime: {
+                gte: new Date()
+            },
+            participants: {
+                some: {
+                    participantId: userId
                 }
             }
+        },
+        orderBy: {
+            eventTime: 'asc'
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            location: true,
+            eventTime: true,
+            eventOrganizer: true,
+            communityId: true,
         }
     });
 

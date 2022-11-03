@@ -5,6 +5,21 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export const getAllUsers = async () => {
+    const users = await prisma.user.findMany({
+        select: {
+            id: true,
+            fullName: true,
+            email: true,
+            birthDate: true,
+            education: true,
+            role: true,
+        }
+    });
+
+    return users;
+};
+
 export const changedPasswordAfter = (JWTTimestamp, passwordChangedAt) => {
     const changedTimestamp = parseInt(
         passwordChangedAt.getTime() / 1000,
@@ -65,6 +80,11 @@ export const getUserbyEmail = async (email) => {
     const user = await prisma.user.findUnique({
         where: {
             email
+        },
+        select: {
+            id: true,
+            email: true,
+            password: true
         }
     });
 
@@ -111,3 +131,4 @@ export const createNewUser = async (payload, encryptedPassword) => {
 
     return newUser
 };
+

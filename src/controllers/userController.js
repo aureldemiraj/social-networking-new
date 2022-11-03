@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 import AppError from './../common/appError.js';
@@ -8,13 +7,14 @@ import {
     getUserbyId,
     createSendToken,
     correctPassword,
-    createUser
+    createUser,
+    getAllUsers,
 } from './../services/userService.js';
+import signUpRequest from './../validations/signUpRequest.js';
+import loginInRequest from './../validations/logInRequest.js';
 
-const prisma = new PrismaClient();
-
-export const getUsers = async (req, res) => {
-    const users = await prisma.user.findMany();
+export const getUsers = async (req, res, next) => {
+    const users = await getAllUsers();
 
     res.status(200).json({
         message: 'Success',
@@ -23,15 +23,7 @@ export const getUsers = async (req, res) => {
 };
 
 export const register = catchAsync(async (req, res, next) => {
-    const payload = req.body;
-
-    // todo 1) and 2)
-    // 1) Check if the complete data input is filled out
-    // if (!(fullName && email && password && birthDate)) {
-    //     return next(new AppError('All input is required', 400))
-    // }
-
-    // 2) Check if the input data is correct
+    const payload = await signUpRequest.validateAsync(req.body);
 
     const oldUser = await getUserbyEmail(payload.email);
 
@@ -45,17 +37,11 @@ export const register = catchAsync(async (req, res, next) => {
 })
 
 export const login = catchAsync(async (req, res, next) => {
-    const { email, password } = req.body;
+    const payload = await loginInRequest.validateAsync(req.body);
 
-    // 1) Validate user input
-    if (!email || !password) {
-        return next(new AppError('Please provide email and password!', 400))
-    }
+    const user = await getUserbyEmail(payload.email);
 
-    // 2) Validate if user exists in our database
-    const user = await getUserbyEmail(email);
-
-    if (!user || !(await correctPassword(password, user.password))) {
+    if (!user || !(await correctPassword(payload.password, user.password))) {
         return next(new AppError('Incorrect email or password', 400))
     }
 

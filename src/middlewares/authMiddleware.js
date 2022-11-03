@@ -6,11 +6,10 @@ import { catchAsync } from './../common/catchAsync.js';
 import { getEventById } from './../services/eventService.js';
 import { getPostById } from './../services/postService.js';
 import { getUserbyId, changedPasswordAfter } from './../services/userService.js';
-import { isUserInCommunity } from './../services/communityService.js';
+import { isUserJoined } from './../services/communityService.js';
 
 export const protect = catchAsync(async (req, res, next) => {
 
-    // 1) Getting token and check if it's there
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -23,17 +22,14 @@ export const protect = catchAsync(async (req, res, next) => {
         return next(new AppError('You are not logged in.', 401))
     }
 
-    // 2) Verificate token
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
-    // 3) Check if user still exists
     const currentUser = await getUserbyId(decoded.id);
 
     if (!currentUser) {
         return next(new AppError('The user belonging to this token does no longer exist', 401))
     }
 
-    // 4) Check if user changed password after the token was issued
     if (currentUser.passwordChangedAt) {
         if (changedPasswordAfter(decoded.iat, currentUser.passwordChangedAt)) {
             return next(new AppError('User recently changed password! Please login again', 401))
@@ -92,7 +88,7 @@ export const checkIfJoin = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
     const userId = req.userId;
 
-    const userInCommunity = await isUserInCommunity(userId, communityId);
+    const userInCommunity = await isUserJoined(userId, communityId);
 
     if (!userInCommunity) {
         return next(new AppError('You should join the community to perform this action', 403))

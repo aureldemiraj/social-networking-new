@@ -11,9 +11,9 @@ import {
     getEvent,
     updateEvent,
     deleteEvent,
-    confirmGoing,
-    cancelConfirmation,
-    getEventParticipants,
+    subscribe,
+    unsubscribe,
+    getEventSubscribers,
     myEvents,
     subscribedEvents
 } from './../controllers/eventController.js';
@@ -25,9 +25,7 @@ router.get('/', getEvents);
 router.get('/myEvents', protect, myEvents);
 router.get('/subscribedEvents', protect, subscribedEvents);
 
-router.use(checkIfJoin);
-
-router.post('/', createEvent);
+router.post('/', checkIfJoin, createEvent);
 
 router
     .route('/:eventId')
@@ -35,9 +33,9 @@ router
     .put(checkEventOrganizer, updateEvent)
     .delete(checkEventOrganizer, deleteEvent);
 
-router.post('/:eventId/going', confirmGoing);
-router.post('/:eventId/cancel', cancelConfirmation);
+router.get('/:eventId/subscribers', getEventSubscribers);
+router.post('/:eventId/subscribe', subscribe);
+router.post('/:eventId/unsubscribe', unsubscribe);
 
-router.get('/:eventId/participants', getEventParticipants);
 
 export default router;

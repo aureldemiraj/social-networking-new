@@ -11,7 +11,7 @@ import {
     getMe,
     getUser,
     forgotPassword,
-    resetPassword
+    resetPassword,
 } from './../controllers/userController.js';
 
 const router = express.Router();
@@ -24,7 +24,6 @@ router.put('/resetPassword/:token', resetPassword); //toDo
 router.use(protect);
 
 router.get('/me', getMe, getUser);
-router.put('/updateMe'); //toDo
 router.delete('/deleteMe'); //toDo
 router.get('/:userId', getUser);
 

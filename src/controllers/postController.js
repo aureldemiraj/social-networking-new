@@ -6,9 +6,8 @@ import {
     createNewPost,
     updatePostbyId,
     deletePostbyId,
-    checkPostRequest
 } from "../services/postService.js";
-
+import createRequest from './../validations/createPostRequest.js';
 
 export const getPosts = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
@@ -25,11 +24,7 @@ export const getPosts = catchAsync(async (req, res, next) => {
 export const createPost = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
     const authorId = req.userId;
-    const payload = req.body;
-
-    if (!checkPostRequest(payload)) {
-        return next(new AppError('Please fill in all required fields.', 400))
-    }
+    const payload = await createRequest.validateAsync(req.body);
 
     const newPost = await createNewPost(payload, communityId, authorId);
 
@@ -57,18 +52,13 @@ export const getPost = catchAsync(async (req, res, next) => {
 
 export const updatePost = catchAsync(async (req, res, next) => {
     const postId = req.params.postId;
-    const payload = req.body;
-
-    if (!checkPostRequest(payload)) {
-        return next(new AppError('Please fill in all required fields.', 400))
-    }
+    const payload = await createRequest.validateAsync(req.body);
 
     const updatedPost = await updatePostbyId(payload, postId);
 
     if (!updatedPost) {
         return next(new AppError('No post found with that ID', 404))
     }
-
 
     res.status(200).json({
         status: 'success',

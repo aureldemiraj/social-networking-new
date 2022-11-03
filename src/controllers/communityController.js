@@ -7,12 +7,12 @@ import {
     leaveCommunitybyId,
     topLargestCommunites,
     topMostActiveCommunities,
-    checkCommunityRequest,
     isUserJoined,
     getMyCommunities
 } from './../services/communityService.js';
-import { catchAsync } from './../common/catchAsync.js'
-import AppError from './../common/appError.js'
+import { catchAsync } from './../common/catchAsync.js';
+import AppError from './../common/appError.js';
+import createRequest from './../validations/createCommunityRequest.js';
 
 export const getCommunities = catchAsync(async (req, res, next) => {
     const allCommunities = await getAllCommunities();
@@ -24,11 +24,7 @@ export const getCommunities = catchAsync(async (req, res, next) => {
 });
 
 export const createCommunity = catchAsync(async (req, res, next) => {
-    const payload = req.body;
-
-    if (!checkCommunityRequest(payload)) {
-        return next(new AppError('Please fill in all required fields.', 400))
-    }
+    const payload = await createRequest.validateAsync(req.body);
 
     const oldCommunity = await getCommunityByName(payload.name);
 
@@ -134,7 +130,8 @@ export const myCommunities = catchAsync(async (req, res, next) => {
 
     const myCommunities = await getMyCommunities(userId);
 
-
-
-
+    res.status(200).json({
+        status: 'success',
+        data: myCommunities
+    });
 });
