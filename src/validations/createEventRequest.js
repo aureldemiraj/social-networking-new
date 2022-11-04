@@ -19,7 +19,10 @@ const schema = Joi.object({
     eventTime: Joi
         .date()
         .required()
-        .min('now'),
+        .min('now')
+        .messages({
+            'date.min': 'The event date should be in the future'
+        }),
 });
 
 export default schema

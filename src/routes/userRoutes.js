@@ -1,7 +1,6 @@
 import express from 'express';
 
 import {
-    protect,
     restrictTo
 } from './../middlewares/authMiddleware.js';
 import {
@@ -21,7 +20,7 @@ router.post('/login', login);
 router.post('/forgotPassword', forgotPassword); //toDo
 router.put('/resetPassword/:token', resetPassword); //toDo
 
-router.use(protect);
+router.use(restrictTo('USER', 'ADMIN'));
 
 router.get('/me', getMe, getUser);
 router.delete('/deleteMe'); //toDo

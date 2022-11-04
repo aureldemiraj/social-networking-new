@@ -2,7 +2,8 @@ import express from 'express';
 
 import {
     checkPostAuthor,
-    checkIfJoin
+    checkIfJoined,
+    restrictTo
 } from './../middlewares/authMiddleware.js';
 import {
     getPosts,
@@ -14,11 +15,11 @@ import {
 
 const router = express.Router({ mergeParams: true });
 
-router.get('/', getPosts);
+router.use(restrictTo('USER', 'ADMIN'));
 
-router.use(checkIfJoin);
+router.get('/', checkIfJoined, getPosts);
 
-router.post('/', createPost);
+router.post('/', checkIfJoined, createPost);
 
 router
     .route('/:postId')

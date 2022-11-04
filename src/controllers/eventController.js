@@ -57,7 +57,7 @@ export const getEvent = catchAsync(async (req, res, next) => {
 
 export const updateEvent = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
-    const payload = await createRequest(req.body);
+    const payload = await createRequest.validateAsync(req.body);
 
     const updatedEvent = await updateEventbyId(payload, eventId);
 

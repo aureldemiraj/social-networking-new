@@ -2,8 +2,8 @@ import express from 'express';
 
 import {
     checkEventOrganizer,
-    checkIfJoin,
-    protect
+    checkIfJoined,
+    restrictTo
 } from './../middlewares/authMiddleware.js';
 import {
     getEvents,
@@ -20,12 +20,13 @@ import {
 
 const router = express.Router({ mergeParams: true });
 
+router.use(restrictTo('USER', 'ADMIN'));
+
 router.get('/', getEvents);
+router.get('/myEvents', myEvents);
+router.get('/subscribedEvents', subscribedEvents);
 
-router.get('/myEvents', protect, myEvents);
-router.get('/subscribedEvents', protect, subscribedEvents);
-
-router.post('/', checkIfJoin, createEvent);
+router.post('/', checkIfJoined, createEvent);
 
 router
     .route('/:eventId')
