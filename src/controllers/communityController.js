@@ -89,7 +89,7 @@ export const leaveCommunity = catchAsync(async (req, res, next) => {
         return next(new AppError('No community found with that ID', 400))
     }
 
-    const userJoined = await joinCommunitybyId(userId, communityId);
+    const userJoined = await isUserJoined(userId, communityId);
 
     if (!userJoined) {
         return next(new AppError('You are not joined in this community.', 400))

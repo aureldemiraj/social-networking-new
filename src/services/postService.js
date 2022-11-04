@@ -12,7 +12,7 @@ export const getAllPosts = async (communityId) => {
     }
 
     const allPosts = await prisma.post.findMany({
-        filters,
+        ...filters,
         select: {
             id: true,
             title: true,

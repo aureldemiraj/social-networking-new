@@ -35,17 +35,12 @@ export const correctPassword = (candidatePassword, userPassword) => {
 
 export const createSendToken = (user, statusCode, res) => {
     const userId = user.id;
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    const userRole = user.role;
+    const token = jwt.sign({ userId, userRole }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
     });
 
-    res.cookie('jwt', token, {
-        expires: new Date(
-            Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 60 * 60 * 1000
-        ),
-        secure: true,
-        httpOnly: true
-    });
+    user.password = undefined;
 
     res.status(statusCode).json({
         status: 'success',
@@ -66,14 +61,59 @@ export const createUser = async (payload) => {
     return newUser
 };
 
-export const createPasswordResetToken = () => {
+export const createPasswordResetToken = async (userEmail) => {
     const resetToken = crypto.randomBytes(32).toString('hex');
 
     // these should be stored in database
     const passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    const passwordResetExpires = Date.now() + 10 * 60 * 1000;
+    const passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    await updateUserForResetPassword(userEmail, passwordResetToken, passwordResetExpires);
 
     return resetToken
+};
+
+export const updateUserForResetPassword = async (userEmail, passwordResetToken, passwordResetExpires) => {
+    await prisma.user.update({
+        where: {
+            email: userEmail
+        },
+        data: {
+            passwordResetToken,
+            passwordResetExpires
+        }
+    })
+
+};
+
+export const getUserByResetToken = async (passwordResetToken) => {
+    const hashedPassword = crypto.createHash('sha256').update(passwordResetToken).digest('hex');
+
+    const user = await prisma.user.findFirst({
+        where: {
+            passwordResetToken: hashedPassword,
+            passwordResetExpires: {
+                gt: new Date()
+            }
+        }
+    });
+
+    return user
+};
+
+export const updateUserPassword = async (userId, password) => {
+    const encryptedPassword = await bcrypt.hash(password, 12);
+
+    await prisma.user.update({
+        where: {
+            id: userId
+        },
+        data: {
+            password: encryptedPassword,
+            passwordResetToken: null,
+            passwordResetExpires: null
+        }
+    })
 };
 
 export const getUserbyEmail = async (email) => {
@@ -84,7 +124,8 @@ export const getUserbyEmail = async (email) => {
         select: {
             id: true,
             email: true,
-            password: true
+            password: true,
+            role: true
         }
     });
 
@@ -125,7 +166,8 @@ export const createNewUser = async (payload, encryptedPassword) => {
             fullName: true,
             email: true,
             birthDate: true,
-            education: true
+            education: true,
+            role: true
         }
     });
 

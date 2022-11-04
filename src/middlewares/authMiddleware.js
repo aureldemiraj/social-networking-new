@@ -8,46 +8,42 @@ import { getPostById } from './../services/postService.js';
 import { getUserbyId, changedPasswordAfter } from './../services/userService.js';
 import { isUserJoined } from './../services/communityService.js';
 
-export const protect = catchAsync(async (req, res, next) => {
-
-    let token;
-
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies.jwt) {
-        token = req.cookies.jwt;
-    }
-
-    if (!token) {
-        return next(new AppError('You are not logged in.', 401))
-    }
-
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
-    const currentUser = await getUserbyId(decoded.id);
-
-    if (!currentUser) {
-        return next(new AppError('The user belonging to this token does no longer exist', 401))
-    }
-
-    if (currentUser.passwordChangedAt) {
-        if (changedPasswordAfter(decoded.iat, currentUser.passwordChangedAt)) {
-            return next(new AppError('User recently changed password! Please login again', 401))
-        }
-    }
-
-    req.userId = currentUser.id;
-    req.userRole = currentUser.role;
-    next();
-})
-
 export const restrictTo = (...roles) => {
-    return async (req, res, next) => {
-        if (!roles.includes(req.userRole)) {
+    return catchAsync(async (req, res, next) => {
+        let token;
+
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            token = req.headers.authorization.split(' ')[1];
+        } else if (req.cookies.jwt) {
+            token = req.cookies.jwt;
+        }
+
+        if (!token) {
+            return next(new AppError('You are not logged in.', 401))
+        }
+
+        const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+        const currentUser = await getUserbyId(decoded.userId);
+
+        if (!currentUser) {
+            return next(new AppError('The user belonging to this token does no longer exist', 401))
+        }
+
+        if (currentUser.passwordChangedAt) {
+            if (changedPasswordAfter(decoded.iat, currentUser.passwordChangedAt)) {
+                return next(new AppError('User recently changed password! Please login again', 401))
+            }
+        }
+
+        if (!roles.includes(decoded.userRole)) {
             return next(new AppError('You do not have permission to perform this action!', 403))
         }
+
+        req.userId = decoded.userId;
+        req.userRole = decoded.userRole;
         next();
-    }
+    })
 }
 
 export const checkPostAuthor = catchAsync(async (req, res, next) => {
@@ -84,9 +80,13 @@ export const checkEventOrganizer = catchAsync(async (req, res, next) => {
     next();
 })
 
-export const checkIfJoin = catchAsync(async (req, res, next) => {
+export const checkIfJoined = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
     const userId = req.userId;
+
+    if (!communityId) {
+        return next(new AppError('Please provide a community!', 400))
+    }
 
     const userInCommunity = await isUserJoined(userId, communityId);
 

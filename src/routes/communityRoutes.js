@@ -3,7 +3,6 @@ import express from 'express';
 import eventRouter from './eventRoutes.js';
 import postRouter from './postRoutes.js';
 import {
-    protect,
     restrictTo
 } from './../middlewares/authMiddleware.js';
 import {
@@ -23,10 +22,10 @@ router.get('/', getCommunities);
 router.get('/largestCommunities', largestCommunites);
 router.get('/mostActiveCommunities', mostActiveCommunities);
 
-router.use(protect);
 
 router.post('/', restrictTo('ADMIN'), createCommunity);
 
+router.use(restrictTo('USER', 'ADMIN'));
 router.get('/myCommunities', myCommunities);
 
 router

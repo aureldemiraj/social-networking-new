@@ -4,7 +4,7 @@ const schema = Joi.object({
     name: Joi
         .string()
         .trim()
-        .required,
+        .required(),
 
     description: Joi
         .string()
