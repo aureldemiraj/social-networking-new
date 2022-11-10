@@ -13,7 +13,7 @@ import {
     getMyEvents,
     getSubscribedEvents
 } from "../services/eventService.js";
-import createRequest from './../validations/createEventRequest.js';
+import { createEventRequest } from './../validations/index.js';
 
 export const getEvents = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
@@ -22,7 +22,6 @@ export const getEvents = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
-        results: allEvents.length,
         data: allEvents
     });
 });
@@ -30,7 +29,7 @@ export const getEvents = catchAsync(async (req, res, next) => {
 export const createEvent = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
     const organizerId = req.userId;
-    const payload = await createRequest.validateAsync(req.body);
+    const payload = await createEventRequest.validateAsync(req.body);
 
     const newEvent = await createNewEvent(payload, communityId, organizerId);
 
@@ -57,7 +56,7 @@ export const getEvent = catchAsync(async (req, res, next) => {
 
 export const updateEvent = catchAsync(async (req, res, next) => {
     const eventId = req.params.eventId;
-    const payload = await createRequest.validateAsync(req.body);
+    const payload = await createEventRequest.validateAsync(req.body);
 
     const updatedEvent = await updateEventbyId(payload, eventId);
 
@@ -100,7 +99,7 @@ export const subscribe = catchAsync(async (req, res, next) => {
     const userSubscribed = await isUserSubscribed(userId, eventId);
 
     if (userSubscribed) {
-        return next(new AppError('You have already confirm.', 400))
+        return next(new AppError('You are already subscribed to this event.', 400))
     }
 
     const result = await subscribeEvent(eventId, userId);
@@ -124,7 +123,7 @@ export const unsubscribe = catchAsync(async (req, res, next) => {
     const userSubscribed = await isUserSubscribed(userId, eventId);
 
     if (!userSubscribed) {
-        return next(new AppError('You have not confirmed yet.', 400))
+        return next(new AppError('You aren\'n subscribed to this event.', 400))
     }
 
     const result = await unsubscribeEvent(eventId, userId);

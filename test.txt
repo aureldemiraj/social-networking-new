@@ -1,0 +1,2 @@
+Some text to test pipes. Streams let us handle large files. Pipes let us piping output of a readable stream, as an input to a writable 
+stream.

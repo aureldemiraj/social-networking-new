@@ -1,10 +1,9 @@
 import express from 'express';
 
-import {
-    checkEventOrganizer,
-    checkIfJoined,
-    restrictTo
-} from './../middlewares/authMiddleware.js';
+import { restrictTo } from './../middlewares/authMiddleware.js';
+import { checkIfJoined } from './../middlewares/checkIfJoined.js';
+import { checkEventOrganizer } from './../middlewares/checkEventOrganizer.js';
+
 import {
     getEvents,
     createEvent,
@@ -37,6 +36,5 @@ router
 router.get('/:eventId/subscribers', getEventSubscribers);
 router.post('/:eventId/subscribe', subscribe);
 router.post('/:eventId/unsubscribe', unsubscribe);
-
 
 export default router;

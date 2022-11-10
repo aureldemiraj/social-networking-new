@@ -1,6 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
+// const prisma = new PrismaClient();
 
-const prisma = new PrismaClient();
+import prisma from './../../db.js';
 
 export const getAllEvents = async (communityId) => {
     const filters = [
@@ -35,6 +36,25 @@ export const getAllEvents = async (communityId) => {
     return allEvents
 };
 
+export const getEventById = async (id) => {
+    const event = await prisma.event.findUnique({
+        where: {
+            id
+        },
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            location: true,
+            eventTime: true,
+            eventOrganizer: true,
+            communityId: true
+        }
+    });
+
+    return event
+};
+
 export const createNewEvent = async (payload, communityId, organizerId) => {
     const { name, description, location, eventTime } = payload;
 
@@ -61,29 +81,10 @@ export const createNewEvent = async (payload, communityId, organizerId) => {
     return newEvent
 };
 
-export const getEventById = async (id) => {
-    const event = await prisma.event.findUnique({
-        where: {
-            id
-        },
-        select: {
-            id: true,
-            name: true,
-            description: true,
-            location: true,
-            eventTime: true,
-            eventOrganizer: true,
-            communityId: true
-        }
-    });
-
-    return event
-};
-
 export const updateEventbyId = async (payload, id) => {
     const { name, description, location, eventTime } = payload;
 
-    const event = await prisma.event.update({
+    const updatedEvent = await prisma.event.update({
         where: {
             id
         },
@@ -104,53 +105,44 @@ export const updateEventbyId = async (payload, id) => {
         }
     });
 
-    return event
+    return updatedEvent
 };
 
 export const deleteEventbyId = async (id) => {
-    const event = await prisma.event.delete({
+    const deletedEvent = await prisma.event.delete({
         where: {
             id
-        },
-        select: {
-            id: true,
-            name: true,
-            description: true,
-            location: true,
-            eventTime: true,
-            eventOrganizer: true,
-            communityId: true
         }
     });
 
-    return event
+    return deletedEvent
 };
 
-export const subscribeEvent = async (eventId, participantId) => {
-    const result = await prisma.eventParticipants.create({
+export const subscribeEvent = async (eventId, subscriberId) => {
+    const subscribedEvent = await prisma.eventSubscribers.create({
         data: {
             eventId,
-            participantId
+            subscriberId
         }
     });
 
-    return result
+    return subscribedEvent
 };
 
-export const unsubscribeEvent = async (eventId, participantId) => {
-    const result = await prisma.eventParticipants.delete({
+export const unsubscribeEvent = async (eventId, subscriberId) => {
+    const unsubscribedEvent = await prisma.eventSubscribers.delete({
         where: {
-            eventId_participantId: { eventId, participantId }
+            eventSubscribers: { eventId, subscriberId }
         }
     });
 
-    return result
+    return unsubscribedEvent
 };
 
-export const isUserSubscribed = async (userId, eventId) => {
-    const isUserSubscribed = await prisma.eventParticipants.findUnique({
+export const isUserSubscribed = async (subscriberId, eventId) => {
+    const isUserSubscribed = await prisma.eventSubscribers.findUnique({
         where: {
-            eventId_participantId: { eventId, userId }
+            eventSubscribers: { eventId, subscriberId }
         }
     });
 
@@ -160,7 +152,7 @@ export const isUserSubscribed = async (userId, eventId) => {
 export const getAllEventSubscribers = async (eventId) => {
     const subscribers = await prisma.user.findMany({
         where: {
-            participantIn: {
+            subscriptions: {
                 some: {
                     eventId
                 }
@@ -201,9 +193,9 @@ export const getSubscribedEvents = async (userId) => {
             eventTime: {
                 gte: new Date()
             },
-            participants: {
+            subscribers: {
                 some: {
-                    participantId: userId
+                    subscriberId: userId
                 }
             }
         },

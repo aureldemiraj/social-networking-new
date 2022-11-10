@@ -1,10 +1,9 @@
 import express from 'express';
 
-import {
-    checkPostAuthor,
-    checkIfJoined,
-    restrictTo
-} from './../middlewares/authMiddleware.js';
+import { restrictTo } from './../middlewares/authMiddleware.js';
+import { checkIfJoined } from './../middlewares/checkIfJoined.js';
+import { checkPostAuthor } from './../middlewares/checkPostAuthor.js';
+
 import {
     getPosts,
     createPost,

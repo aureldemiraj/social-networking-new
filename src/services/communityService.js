@@ -1,6 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
+// const prisma = new PrismaClient();
 
-const prisma = new PrismaClient();
+import prisma from './../../db.js';
 
 export const getAllCommunities = async () => {
     const allCommunities = await prisma.community.findMany({
@@ -79,7 +80,7 @@ export const joinCommunitybyId = async (userId, communityId) => {
 };
 
 export const leaveCommunitybyId = async (userId, communityId) => {
-    const goneUser = await prisma.usersOnCommunities.delete({
+    const leaveCommunity = await prisma.usersOnCommunities.delete({
         where: {
             communityUsers: { userId, communityId }
         },
@@ -90,12 +91,12 @@ export const leaveCommunitybyId = async (userId, communityId) => {
         }
     });
 
-    return goneUser
+    return leaveCommunity
 };
 
 
 export const topLargestCommunites = async () => {
-    const largeCommunities = await prisma.usersOnCommunities.groupBy({
+    const largestCommunities = await prisma.usersOnCommunities.groupBy({
         by: ['communityId'],
         _count: {
             _all: true
@@ -105,12 +106,12 @@ export const topLargestCommunites = async () => {
                 userId: 'desc'
             }
         },
-        take: 5
+        take: 3
     });
 
-    const idsOfCommunities = largeCommunities.map(el => el.communityId);
+    const idsOfCommunities = largestCommunities.map(el => el.communityId);
 
-    const result = await prisma.community.findMany({
+    const largestCommunitiesDetails = await prisma.community.findMany({
         where: {
             id: {
                 in: idsOfCommunities
@@ -123,7 +124,7 @@ export const topLargestCommunites = async () => {
         }
     });
 
-    return result
+    return largestCommunitiesDetails
 };
 
 export const topMostActiveCommunities = async (queryString) => {
@@ -152,12 +153,12 @@ export const topMostActiveCommunities = async (queryString) => {
                 id: 'desc'
             }
         },
-        take: 5
+        take: 3
     });
 
     const idsOfCommunities = mostActiveCommunities.map(el => el.communityId);
 
-    const result = await prisma.community.findMany({
+    const mostActiveCommunitiesDetails = await prisma.community.findMany({
         where: {
             id: {
                 in: idsOfCommunities
@@ -170,7 +171,7 @@ export const topMostActiveCommunities = async (queryString) => {
         }
     });
 
-    return result
+    return mostActiveCommunitiesDetails
 };
 
 export const isUserJoined = async (userId, communityId) => {
@@ -205,3 +206,13 @@ export const getMyCommunities = async (userId) => {
 
     return myCommunities
 };
+
+export const deleteCommunityById = async (communityId) => {
+    const deletedCommunity = await prisma.community.delete({
+        where: {
+            id: communityId
+        }
+    });
+
+    return deletedCommunity
+}

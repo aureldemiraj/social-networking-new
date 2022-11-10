@@ -7,7 +7,7 @@ import {
     updatePostbyId,
     deletePostbyId,
 } from "../services/postService.js";
-import createRequest from './../validations/createPostRequest.js';
+import { createPostRequest } from './../validations/index.js';
 
 export const getPosts = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
@@ -16,7 +16,6 @@ export const getPosts = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
-        results: allPosts.length,
         data: allPosts
     });
 });
@@ -24,7 +23,7 @@ export const getPosts = catchAsync(async (req, res, next) => {
 export const createPost = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
     const authorId = req.userId;
-    const payload = await createRequest.validateAsync(req.body);
+    const payload = await createPostRequest.validateAsync(req.body);
 
     const newPost = await createNewPost(payload, communityId, authorId);
 
@@ -52,7 +51,7 @@ export const getPost = catchAsync(async (req, res, next) => {
 
 export const updatePost = catchAsync(async (req, res, next) => {
     const postId = req.params.postId;
-    const payload = await createRequest.validateAsync(req.body);
+    const payload = await createPostRequest.validateAsync(req.body);
 
     const updatedPost = await updatePostbyId(payload, postId);
 

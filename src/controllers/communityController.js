@@ -8,11 +8,12 @@ import {
     topLargestCommunites,
     topMostActiveCommunities,
     isUserJoined,
-    getMyCommunities
+    getMyCommunities,
+    deleteCommunityById
 } from './../services/communityService.js';
 import { catchAsync } from './../common/catchAsync.js';
 import AppError from './../common/appError.js';
-import createRequest from './../validations/createCommunityRequest.js';
+import { createCommunityRequest } from './../validations/index.js';
 
 export const getCommunities = catchAsync(async (req, res, next) => {
     const allCommunities = await getAllCommunities();
@@ -24,7 +25,7 @@ export const getCommunities = catchAsync(async (req, res, next) => {
 });
 
 export const createCommunity = catchAsync(async (req, res, next) => {
-    const payload = await createRequest.validateAsync(req.body);
+    const payload = await createCommunityRequest.validateAsync(req.body);
 
     const oldCommunity = await getCommunityByName(payload.name);
 
@@ -46,7 +47,7 @@ export const getCommunity = catchAsync(async (req, res, next) => {
     const community = await getCommunityById(communityId);
 
     if (!community) {
-        return next(new AppError('No community found with that ID', 400))
+        return next(new AppError('No community found with that ID', 404))
     }
 
     res.status(200).json({
@@ -62,7 +63,7 @@ export const joinCommunity = catchAsync(async (req, res, next) => {
     const community = await getCommunityById(communityId);
 
     if (!community) {
-        return next(new AppError('No community found with that ID', 400))
+        return next(new AppError('No community found with that ID', 404))
     }
 
     const userJoined = await isUserJoined(userId, communityId);
@@ -86,7 +87,7 @@ export const leaveCommunity = catchAsync(async (req, res, next) => {
     const community = await getCommunityById(communityId);
 
     if (!community) {
-        return next(new AppError('No community found with that ID', 400))
+        return next(new AppError('No community found with that ID', 404))
     }
 
     const userJoined = await isUserJoined(userId, communityId);
@@ -95,7 +96,7 @@ export const leaveCommunity = catchAsync(async (req, res, next) => {
         return next(new AppError('You are not joined in this community.', 400))
     }
 
-    const goneUser = await leaveCommunitybyId(userId, communityId);
+    await leaveCommunitybyId(userId, communityId);
 
     res.status(204).json({
         status: 'success',
@@ -133,5 +134,22 @@ export const myCommunities = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         data: myCommunities
+    });
+});
+
+export const deleteCommunity = catchAsync(async (req, res, next) => {
+    const communityId = req.params.communityId;
+
+    const community = await getCommunityById(communityId);
+
+    if (!community) {
+        return next(new AppError('No community found with that ID', 404))
+    }
+
+    await deleteCommunityById(communityId);
+
+    res.status(204).json({
+        status: 'success',
+        data: null
     });
 });
