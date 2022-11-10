@@ -13,15 +13,16 @@ import {
     leaveCommunity,
     largestCommunites,
     mostActiveCommunities,
-    myCommunities
+    myCommunities,
+    deleteCommunity,
 } from './../controllers/communityController.js';
 
 const router = express.Router();
 
+
 router.get('/', getCommunities);
 router.get('/largestCommunities', largestCommunites);
 router.get('/mostActiveCommunities', mostActiveCommunities);
-
 
 router.post('/', restrictTo('ADMIN'), createCommunity);
 
@@ -30,7 +31,8 @@ router.get('/myCommunities', myCommunities);
 
 router
     .route('/:communityId')
-    .get(getCommunity);
+    .get(getCommunity)
+    .delete(deleteCommunity);
 
 router.use('/:communityId/events', eventRouter);
 router.use('/:communityId/posts', postRouter);

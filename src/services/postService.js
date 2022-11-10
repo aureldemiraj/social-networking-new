@@ -1,6 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
+// const prisma = new PrismaClient();
 
-const prisma = new PrismaClient();
+import prisma from './../../db.js';
 
 export const getAllPosts = async (communityId) => {
     let filters = {};
@@ -25,6 +26,23 @@ export const getAllPosts = async (communityId) => {
     return allPosts;
 };
 
+export const getPostById = async (id) => {
+    const post = await prisma.post.findUnique({
+        where: {
+            id
+        },
+        select: {
+            id: true,
+            title: true,
+            body: true,
+            authorId: true,
+            communityId: true
+        }
+    });
+
+    return post
+};
+
 export const createNewPost = async (payload, communityId, authorId) => {
     const { title, body } = payload;
 
@@ -45,24 +63,7 @@ export const createNewPost = async (payload, communityId, authorId) => {
     });
 
     return newPost
-}
-
-export const getPostById = async (id) => {
-    const post = await prisma.post.findUnique({
-        where: {
-            id
-        },
-        select: {
-            id: true,
-            title: true,
-            body: true,
-            authorId: true,
-            communityId: true
-        }
-    });
-
-    return post
-}
+};
 
 export const updatePostbyId = async (payload, id) => {
     const { title, body } = payload;

@@ -11,19 +11,22 @@ import {
     getUser,
     forgotPassword,
     resetPassword,
+    logout,
+    deleteMe
 } from './../controllers/userController.js';
 
 const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
-router.post('/forgotPassword', forgotPassword); //toDo
-router.put('/resetPassword/:token', resetPassword); //toDo
+router.post('/forgotPassword', forgotPassword);
+router.patch('/resetPassword/:token', resetPassword);
 
 router.use(restrictTo('USER', 'ADMIN'));
 
+router.post('/logout', logout);
 router.get('/me', getMe, getUser);
-router.delete('/deleteMe'); //toDo
+router.delete('/deleteMe', deleteMe);
 router.get('/:userId', getUser);
 
 router.use(restrictTo('ADMIN'));

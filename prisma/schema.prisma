@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -15,17 +16,15 @@ model User {
   fullName             String               @db.VarChar(100)
   email                String               @unique
   password             String
-  isActive             Boolean              @default(true)
   birthDate            DateTime             @db.Date
   registeredDate       DateTime             @default(now())
   education            String?              @db.VarChar(250)
-  passwordChangedAt    DateTime?
   passwordResetToken   String?
   passwordResetExpires DateTime?
   role                 Role                 @default(USER)
-  events               Event[]
+  eventsOrganized      Event[]
   communities          UsersOnCommunities[]
-  participantIn        EventParticipants[]
+  subscriptions        EventSubscribers[]
   posts                Post[]
 
   @@map("users")
@@ -44,25 +43,25 @@ model Community {
 }
 
 model Event {
-  id             String              @id @default(uuid())
-  name           String              @db.VarChar(100)
-  description    String              @db.VarChar(500)
+  id             String             @id @default(uuid())
+  name           String             @db.VarChar(100)
+  description    String             @db.VarChar(500)
   location       String
-  organizer      User                @relation(fields: [eventOrganizer], references: [id])
+  organizer      User               @relation(fields: [eventOrganizer], references: [id], onDelete: Cascade)
   eventOrganizer String
-  community      Community           @relation(fields: [communityId], references: [id])
+  community      Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
   communityId    String
   eventTime      DateTime
-  createdTime    DateTime            @default(now())
-  participants   EventParticipants[]
+  createdTime    DateTime           @default(now())
+  subscribers    EventSubscribers[]
 
   @@map("events")
 }
 
 model UsersOnCommunities {
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  community   Community @relation(fields: [communityId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   communityId String
   joinedAt    DateTime  @default(now())
 
@@ -70,23 +69,23 @@ model UsersOnCommunities {
   @@map("users_on_communities")
 }
 
-model EventParticipants {
-  event         Event  @relation(fields: [eventId], references: [id])
-  eventId       String
-  participant   User   @relation(fields: [participantId], references: [id])
-  participantId String
+model EventSubscribers {
+  event        Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String
+  subscriber   User   @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  subscriberId String
 
-  @@id([eventId, participantId])
-  @@map("event_participants")
+  @@id(name: "eventSubscribers", [eventId, subscriberId])
+  @@map("event_subscribers")
 }
 
 model Post {
   id          String    @id @default(uuid())
   title       String
   body        String
-  author      User      @relation(fields: [authorId], references: [id])
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    String
-  community   Community @relation(fields: [communityId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   communityId String
   createdTime DateTime  @default(now())
 

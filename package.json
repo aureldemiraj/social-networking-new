@@ -11,13 +11,18 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "eslint": "^8.27.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
     "nodemon": "^2.0.20",
     "prisma": "^4.4.0"
   },
   "dependencies": {
     "@prisma/client": "^4.4.0",
+    "await-event-emitter": "^2.0.2",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-rate-limit": "^6.6.0",
     "helmet": "^6.0.0",
