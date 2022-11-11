@@ -1,3 +1,6 @@
+import { catchAsync } from './../common/catchAsync.js';
+import AppError from './../common/appError.js';
+import { createCommunityRequest } from './../validations/index.js';
 import {
     createNewCommunity,
     getAllCommunities,
@@ -11,9 +14,6 @@ import {
     getMyCommunities,
     deleteCommunityById
 } from './../services/communityService.js';
-import { catchAsync } from './../common/catchAsync.js';
-import AppError from './../common/appError.js';
-import { createCommunityRequest } from './../validations/index.js';
 
 export const getCommunities = catchAsync(async (req, res, next) => {
     const allCommunities = await getAllCommunities();

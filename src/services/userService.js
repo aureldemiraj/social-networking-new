@@ -1,9 +1,6 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-// import { PrismaClient } from '@prisma/client';
-// const prisma = new PrismaClient();
-
 import prisma from './../../db.js';
 
 export const getAllUsers = async () => {
@@ -18,7 +15,7 @@ export const getAllUsers = async () => {
         }
     });
 
-    return users;
+    return users
 };
 
 export const getUserbyEmail = async (email) => {
@@ -144,10 +141,9 @@ export const updateUserPassword = async (userId, password) => {
         data: {
             password: encryptedPassword,
             passwordResetToken: null,
-            passwordResetExpires: null,
-            passwordChangedAt: new Date()
+            passwordResetExpires: null
         }
-    })
+    });
 };
 
 export const deleteUserById = async (userId) => {
@@ -158,4 +154,4 @@ export const deleteUserById = async (userId) => {
     });
 
     return deletedUser
-}
+};

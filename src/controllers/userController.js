@@ -1,3 +1,4 @@
+import awaitEventEmitter from 'await-event-emitter';
 import AppError from './../common/appError.js';
 import { catchAsync } from './../common/catchAsync.js';
 import sendEmail from '../common/email.js';
@@ -20,7 +21,6 @@ import {
     forgotPasswordRequest,
     resetPasswordRequest
 } from './../validations/index.js';
-import awaitEventEmitter from 'await-event-emitter';
 
 const EventEmitter = awaitEventEmitter.default;
 const emailEmitter = new EventEmitter();

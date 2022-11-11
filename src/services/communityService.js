@@ -1,6 +1,3 @@
-// import { PrismaClient } from '@prisma/client';
-// const prisma = new PrismaClient();
-
 import prisma from './../../db.js';
 
 export const getAllCommunities = async () => {
@@ -56,8 +53,19 @@ export const getCommunityById = async (id) => {
         select: {
             id: true,
             name: true,
-            description: true
-        }
+            description: true,
+            posts: {
+                orderBy: {
+                    createdTime: 'desc'
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    body: true
+                },
+                take: 3
+            }
+        },
     });
 
     return community
@@ -202,7 +210,7 @@ export const getMyCommunities = async (userId) => {
             name: true,
             description: true
         },
-    })
+    });
 
     return myCommunities
 };

@@ -1,5 +1,6 @@
 import { catchAsync } from './../common/catchAsync.js';
 import AppError from './../common/appError.js';
+import { createPostRequest } from './../validations/index.js';
 import {
     getAllPosts,
     getPostById,
@@ -7,7 +8,6 @@ import {
     updatePostbyId,
     deletePostbyId,
 } from "../services/postService.js";
-import { createPostRequest } from './../validations/index.js';
 
 export const getPosts = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;

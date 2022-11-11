@@ -1,6 +1,3 @@
-// import { PrismaClient } from '@prisma/client';
-// const prisma = new PrismaClient();
-
 import prisma from './../../db.js';
 
 export const getAllPosts = async (communityId) => {
@@ -23,7 +20,7 @@ export const getAllPosts = async (communityId) => {
         }
     });
 
-    return allPosts;
+    return allPosts
 };
 
 export const getPostById = async (id) => {

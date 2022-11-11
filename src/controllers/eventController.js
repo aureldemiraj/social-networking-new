@@ -1,5 +1,6 @@
 import { catchAsync } from './../common/catchAsync.js';
 import AppError from './../common/appError.js';
+import { createEventRequest } from './../validations/index.js';
 import {
     createNewEvent,
     deleteEventbyId,
@@ -13,7 +14,6 @@ import {
     getMyEvents,
     getSubscribedEvents
 } from "../services/eventService.js";
-import { createEventRequest } from './../validations/index.js';
 
 export const getEvents = catchAsync(async (req, res, next) => {
     const communityId = req.params.communityId;
