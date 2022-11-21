@@ -16,6 +16,7 @@ import {
 } from './../services/communityService.js';
 
 export const getCommunities = catchAsync(async (req, res, next) => {
+    console.log(req.headers);
     const allCommunities = await getAllCommunities();
 
     res.status(200).json({
