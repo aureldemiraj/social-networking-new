@@ -1,31 +1,32 @@
 {
-  "name": "socialnetworking",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^2.0.20",
-    "prisma": "^4.4.0"
-  },
-  "dependencies": {
-    "@prisma/client": "^4.4.0",
-    "await-event-emitter": "^2.0.2",
-    "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "express-rate-limit": "^6.6.0",
-    "helmet": "^6.0.0",
-    "joi": "^17.7.0",
-    "jsonwebtoken": "^8.5.1",
-    "nodemailer": "^6.8.0"
-  }
+    "name": "socialnetworking",
+    "version": "1.0.0",
+    "description": "",
+    "main": "./src",
+    "type": "module",
+    "scripts": {
+        "dev": "nodemon index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "nodemon": "^2.0.20",
+        "prisma": "^4.4.0"
+    },
+    "dependencies": {
+        "@prisma/client": "^4.4.0",
+        "await-event-emitter": "^2.0.2",
+        "axios": "^1.2.0",
+        "bcryptjs": "^2.4.3",
+        "cookie-parser": "^1.4.6",
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "express-rate-limit": "^6.6.0",
+        "helmet": "^6.0.0",
+        "joi": "^17.7.0",
+        "jsonwebtoken": "^8.5.1",
+        "nodemailer": "^6.8.0"
+    }
 }
