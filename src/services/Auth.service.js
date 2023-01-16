@@ -1,8 +1,12 @@
 import crypto from 'crypto';
+
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+
 import { prisma } from '../db.js';
+
 import { ok, failure } from '../utils/SendResponse.util.js';
+
 import { Event } from '../events/Event.js';
 
 export const AuthService = {
@@ -100,7 +104,7 @@ export const AuthService = {
     },
 
     getUserbyEmail: async (email) => {
-        const user = await prisma.user.findUnique({
+        return prisma.user.findUnique({
             where: {
                 email,
             },
@@ -111,8 +115,6 @@ export const AuthService = {
                 role: true,
             },
         });
-
-        return user;
     },
 
     createToken: (user) => {

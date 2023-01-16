@@ -1,9 +1,9 @@
-import { CommunityController } from './controllers/Community.controller.js';
-import { UserController } from './controllers/User.controller.js';
-import { EventController } from './controllers/Event.controller.js';
-import { PostController } from './controllers/Post.controller.js';
 import { AuthController } from './controllers/Auth.controller.js';
+import { CommunityController } from './controllers/Community.controller.js';
+import { EventController } from './controllers/Event.controller.js';
 import { MeController } from './controllers/Me.controller.js';
+import { PostController } from './controllers/Post.controller.js';
+import { UserController } from './controllers/User.controller.js';
 
 export function routes(app) {
     const _routes = [

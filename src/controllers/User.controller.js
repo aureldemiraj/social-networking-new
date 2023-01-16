@@ -1,7 +1,10 @@
 import { Router } from 'express';
-import { catchAsync } from '../utils/CatchAsync.util.js';
-import { UserService } from '../services/User.service.js';
+
 import { restrictTo } from '../middlewares/Auth.middleware.js';
+
+import { catchAsync } from '../utils/CatchAsync.util.js';
+
+import { UserService } from '../services/User.service.js';
 
 export const UserController = Router();
 

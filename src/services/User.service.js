@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+
 import { ok, failure } from '../utils/SendResponse.util.js';
 
 export const UserService = {
@@ -18,7 +19,7 @@ export const UserService = {
     },
 
     getUserbyId: async (id) => {
-        const user = await prisma.user.findUnique({
+        return prisma.user.findUnique({
             where: {
                 id,
             },
@@ -30,8 +31,6 @@ export const UserService = {
                 education: true,
             },
         });
-
-        return user;
     },
 
     getUser: async (id) => {

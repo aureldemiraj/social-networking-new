@@ -17,9 +17,9 @@ export const errorMiddleware = (err, req, res, next) => {
         stack: err.stack,
     };
 
-    if (error.name === 'ValidationError') error = handleValidationError(error);
-    else if (error.name === 'JsonWebTokenError') error = handleJWTError();
-    else if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
+    if (error.name == 'ValidationError') error = handleValidationError(error);
+    else if (error.name == 'JsonWebTokenError') error = handleJWTError();
+    else if (error.name == 'TokenExpiredError') error = handleJWTExpiredError();
 
     if (error.isOperational) {
         return res.status(error.statusCode).json({
@@ -27,8 +27,6 @@ export const errorMiddleware = (err, req, res, next) => {
             message: error.message,
         });
     } else {
-        console.log(error.stack);
-
         return res.status(error.statusCode).json({
             status: error.status,
             message: 'Something went wrong! Please try again later',

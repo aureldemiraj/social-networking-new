@@ -1,9 +1,12 @@
 import { Router } from 'express';
-import { UserService } from '../services/User.service.js';
+
+import { restrictTo } from '../middlewares/Auth.middleware.js';
+
 import { EventService } from '../services/Event.service.js';
 import { CommunityService } from '../services/Community.service.js';
+import { UserService } from '../services/User.service.js';
+
 import { catchAsync } from '../utils/CatchAsync.util.js';
-import { restrictTo } from '../middlewares/Auth.middleware.js';
 
 export const MeController = Router();
 

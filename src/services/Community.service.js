@@ -1,4 +1,5 @@
 import { prisma } from '../db.js';
+
 import { ok, failure } from '../utils/SendResponse.util.js';
 
 export const CommunityService = {
@@ -35,7 +36,27 @@ export const CommunityService = {
     },
 
     getCommunity: async (communityId) => {
-        const community = await CommunityService.getCommunityById(communityId);
+        const community = await prisma.community.findUnique({
+            where: {
+                id: communityId,
+            },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                posts: {
+                    orderBy: {
+                        createdTime: 'desc',
+                    },
+                    select: {
+                        id: true,
+                        title: true,
+                        body: true,
+                    },
+                    take: 3,
+                },
+            },
+        });
 
         if (!community) return failure('No community found with that ID.');
 
@@ -202,7 +223,7 @@ export const CommunityService = {
     },
 
     getCommunityById: async (id) => {
-        const community = await prisma.community.findUnique({
+        return prisma.community.findUnique({
             where: {
                 id,
             },
@@ -210,25 +231,12 @@ export const CommunityService = {
                 id: true,
                 name: true,
                 description: true,
-                posts: {
-                    orderBy: {
-                        createdTime: 'desc',
-                    },
-                    select: {
-                        id: true,
-                        title: true,
-                        body: true,
-                    },
-                    take: 3,
-                },
             },
         });
-
-        return community;
     },
 
     getCommunityByName: async (name) => {
-        const community = await prisma.community.findUnique({
+        return prisma.community.findUnique({
             where: {
                 name,
             },
@@ -238,12 +246,10 @@ export const CommunityService = {
                 description: true,
             },
         });
-
-        return community;
     },
 
     isUserJoined: async (userId, communityId) => {
-        const isUserJoined = await prisma.usersOnCommunities.findUnique({
+        return prisma.usersOnCommunities.findUnique({
             where: {
                 communityUsers: { userId, communityId },
             },
@@ -252,7 +258,5 @@ export const CommunityService = {
                 userId: true,
             },
         });
-
-        return isUserJoined;
     },
 };

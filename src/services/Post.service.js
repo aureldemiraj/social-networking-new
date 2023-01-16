@@ -1,6 +1,8 @@
 import { prisma } from '../db.js';
-import { ok, failure } from '../utils/SendResponse.util.js';
+
 import { CommunityService } from './Community.service.js';
+
+import { ok, failure } from '../utils/SendResponse.util.js';
 
 export const PostService = {
     getAllPosts: async (communityId) => {
@@ -59,7 +61,7 @@ export const PostService = {
     },
 
     getPost: async (id) => {
-        const post = await prisma.post.findUnique({
+        return prisma.post.findUnique({
             where: {
                 id,
             },
@@ -71,8 +73,6 @@ export const PostService = {
                 communityId: true,
             },
         });
-
-        return post;
     },
 
     updatePostbyId: async (payload, id) => {

@@ -1,9 +1,13 @@
 import { Router } from 'express';
-import { catchAsync } from '../utils/CatchAsync.util.js';
-import { PostService } from '../services/Post.service.js';
+
 import { restrictTo } from '../middlewares/Auth.middleware.js';
 import { checkPostAuthor } from '../middlewares/CheckPostAuthor.middleware.js';
-import { CreatePostRequest } from '../validators/index.js';
+
+import { PostService } from '../services/Post.service.js';
+
+import { catchAsync } from '../utils/CatchAsync.util.js';
+
+import { CreatePostValidator } from '../validators/index.js';
 
 export const PostController = Router();
 
@@ -25,7 +29,7 @@ PostController.put(
     checkPostAuthor,
     catchAsync(async (req, res, next) => {
         const { postId } = req.params;
-        const payload = await CreatePostRequest.validateAsync(req.body);
+        const payload = await CreatePostValidator.validateAsync(req.body);
 
         const result = await PostService.updatePostbyId(payload, postId);
 

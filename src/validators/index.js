@@ -1,19 +1,17 @@
-import {LoginRequest} from './LoginRequest.validator.js';
-import {SignUpRequest} from './SignUpRequest.validator.js';
-import {ForgotPasswordRequest} from './ForgotPasswordRequest.validator.js';
-import {ResetPasswordRequest} from './ResetPasswordRequest.validator.js';
-import {CreateCommunityRequest} from './CreateCommunityRequest.validator.js';
-import {CreateEventRequest} from './CreateEventRequest.validator.js';
-// import createPostRequest from './create-post-request.js';
-
-import { CreatePostRequest } from './CreatePostRequest.validator.js';
+import { LoginValidator } from './Login.validator.js';
+import { SignUpValidator } from './SignUp.validator.js';
+import { ForgotPasswordValidator } from './ForgotPassword.validator.js';
+import { ResetPasswordValidator } from './ResetPassword.validator.js';
+import { CreateCommunityValidator } from './CreateCommunity.validator.js';
+import { CreateEventValidator } from './CreateEvent.validator.js';
+import { CreatePostValidator } from './CreatePost.validator.js';
 
 export {
-    LoginRequest,
-    SignUpRequest,
-    ForgotPasswordRequest,
-    ResetPasswordRequest,
-    CreateCommunityRequest,
-    CreateEventRequest,
-    CreatePostRequest
+    LoginValidator,
+    SignUpValidator,
+    ForgotPasswordValidator,
+    ResetPasswordValidator,
+    CreateCommunityValidator,
+    CreateEventValidator,
+    CreatePostValidator,
 };

@@ -1,10 +1,14 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
-import { AppError } from './utils/AppError.util.js';
-import { errorMiddleware } from './middlewares/Error.middleware.js';
-import { routes } from './routes.js';
+
 import * as EventIndex from './events/index.js';
+
+import { errorMiddleware } from './middlewares/Error.middleware.js';
+
+import { routes } from './routes.js';
+
+import { AppError } from './utils/AppError.util.js';
 
 export const app = express();
 
@@ -22,7 +26,7 @@ app.use(express.json({ limit: '10kb' }));
 routes(app);
 
 app.all('*', (req, res, next) => {
-    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+    throw new AppError(`Can't find ${req.originalUrl} on this server!`, 404);
 });
 
 app.use(errorMiddleware);
