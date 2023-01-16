@@ -1,9 +1,13 @@
 import express from 'express';
-import { catchAsync } from '../utils/CatchAsync.util.js';
-import { EventService } from '../services/Event.service.js';
+
 import { restrictTo } from '../middlewares/Auth.middleware.js';
 import { checkEventOrganizer } from '../middlewares/CheckEventOrganizer.middleware.js';
-import { CreateEventRequest } from '../validators/index.js';
+
+import { EventService } from '../services/Event.service.js';
+
+import { catchAsync } from '../utils/CatchAsync.util.js';
+
+import { CreateEventValidator } from '../validators/index.js';
 
 export const EventController = express.Router();
 
@@ -34,7 +38,7 @@ EventController.put(
     checkEventOrganizer,
     catchAsync(async (req, res, next) => {
         const { eventId } = req.params;
-        const payload = await CreateEventRequest.validateAsync(req.body);
+        const payload = await CreateEventValidator.validateAsync(req.body);
 
         const result = await EventService.updateEventbyId(payload, eventId);
 

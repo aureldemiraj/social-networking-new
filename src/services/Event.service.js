@@ -1,6 +1,8 @@
 import { prisma } from '../db.js';
-import { ok, failure } from '../utils/SendResponse.util.js';
+
 import { CommunityService } from './Community.service.js';
+
+import { ok, failure } from '../utils/SendResponse.util.js';
 
 export const EventService = {
     getAllEvents: async () => {
@@ -135,7 +137,7 @@ export const EventService = {
     },
 
     getEventById: async (id) => {
-        const event = await prisma.event.findUnique({
+        return prisma.event.findUnique({
             where: {
                 id,
             },
@@ -149,8 +151,6 @@ export const EventService = {
                 communityId: true,
             },
         });
-
-        return event;
     },
 
     getEvent: async (id) => {
@@ -211,7 +211,7 @@ export const EventService = {
 
         if (!event) return failure('No event found with that ID.');
 
-        const userEvent = EventService.isUserSubscribed(subscriberId, eventId);
+        const userEvent = await EventService.isUserSubscribed(subscriberId, eventId);
 
         if (userEvent) return failure('You are already subscribed to this event.', 400);
 
@@ -230,7 +230,7 @@ export const EventService = {
 
         if (!event) return failure('No event found with that ID.');
 
-        const userEvent = EventService.isUserSubscribed(subscriberId, eventId);
+        const userEvent = await EventService.isUserSubscribed(subscriberId, eventId);
 
         if (!userEvent) return failure("You aren't subscribed to this event.", 400);
 
@@ -267,12 +267,10 @@ export const EventService = {
     },
 
     isUserSubscribed: async (subscriberId, eventId) => {
-        const isUserSubscribed = await prisma.eventSubscribers.findUnique({
+        return prisma.eventSubscribers.findUnique({
             where: {
                 eventSubscribers: { eventId, subscriberId },
             },
         });
-
-        return isUserSubscribed;
     },
 };

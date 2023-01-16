@@ -1,11 +1,15 @@
 import { Router } from 'express';
-import { catchAsync } from '../utils/CatchAsync.util.js';
+
+import { restrictTo } from '../middlewares/Auth.middleware.js';
+import { checkIfJoined } from '../middlewares/CheckIfJoined.middleware.js';
+
 import { CommunityService } from '../services/Community.service.js';
 import { EventService } from '../services/Event.service.js';
 import { PostService } from '../services/Post.service.js';
-import { restrictTo } from '../middlewares/Auth.middleware.js';
-import { checkIfJoined } from '../middlewares/CheckIfJoined.middleware.js';
-import { CreateCommunityRequest, CreateEventRequest, CreatePostRequest } from '../validators/index.js';
+
+import { catchAsync } from '../utils/CatchAsync.util.js';
+
+import { CreateCommunityValidator, CreateEventValidator, CreatePostValidator } from '../validators/index.js';
 
 export const CommunityController = Router();
 
@@ -22,7 +26,7 @@ CommunityController.post(
     '/',
     restrictTo('ADMIN'),
     catchAsync(async (req, res, next) => {
-        const { name, description } = await CreateCommunityRequest.validateAsync(req.body);
+        const { name, description } = await CreateCommunityValidator.validateAsync(req.body);
 
         const result = await CommunityService.createNewCommunity(name, description);
 
@@ -119,7 +123,7 @@ CommunityController.post(
     catchAsync(async (req, res, next) => {
         const { communityId } = req.params;
         const { userId } = req;
-        const payload = await CreateEventRequest.validateAsync(req.body);
+        const payload = await CreateEventValidator.validateAsync(req.body);
 
         const result = await EventService.createNewEvent(payload, communityId, userId);
 
@@ -148,7 +152,7 @@ CommunityController.post(
         const { communityId } = req.params;
         const authorId = req.userId;
 
-        const payload = await CreatePostRequest.validateAsync(req.body);
+        const payload = await CreatePostValidator.validateAsync(req.body);
 
         const result = await PostService.createNewPost(payload, communityId, authorId);
 
