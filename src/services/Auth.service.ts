@@ -3,8 +3,8 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-import { prisma } from '../config/db.js';
-import { jwtSecret, jwtExpiresIn } from '../config/auth.config.js';
+import { prisma } from '../config/db';
+import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/email.config';
 
 import { ok, failure } from '../utils/SendResponse.util.js';
 
@@ -121,8 +121,11 @@ export const AuthService = {
     },
 
     createToken: (userId: string, userRole: string) => {
-        const token = jwt.sign({ userId, userRole }, jwtSecret, {
-            expiresIn: jwtExpiresIn,
+        console.log(JWT_EXPIRES_IN);
+        console.log('tes');
+        console.log(JWT_SECRET);
+        const token = jwt.sign({ userId, userRole }, JWT_SECRET, {
+            expiresIn: JWT_EXPIRES_IN,
         });
 
         return token;

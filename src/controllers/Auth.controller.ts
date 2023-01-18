@@ -1,9 +1,10 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { CreateUserInterface } from '../interfaces/User.interface.js';
+
+import { CreateUserInterface } from '../interfaces/User.interface';
 
 import { restrictTo } from '../middlewares/Auth.middleware.js';
 
-import { AuthService } from '../services/Auth.service.js';
+import { AuthService } from '../services/Auth.service';
 
 import { catchAsync } from '../utils/CatchAsync.util.js';
 

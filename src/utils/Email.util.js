@@ -1,13 +1,14 @@
 import nodemailer from 'nodemailer';
 
-import { emailHost, emailPort, emailUsername, emailPassword } from '../config/email.config';
+import { HOST, PORT, USERNAME, PASSWORD } from '../config/email.config';
+
 export const sendEmail = async (options) => {
     const transporter = nodemailer.createTransport({
-        host: emailHost,
-        port: emailPort,
+        host: HOST,
+        port: PORT,
         auth: {
-            user: emailUsername,
-            pass: emailPassword,
+            user: USERNAME,
+            pass: PASSWORD,
         },
     });
 
