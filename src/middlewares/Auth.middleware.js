@@ -2,6 +2,8 @@ import { promisify } from 'util';
 
 import jwt from 'jsonwebtoken';
 
+import { jwtSecret } from '../config/auth.config.js';
+
 import { AppError } from '../utils/AppError.util.js';
 import { catchAsync } from '../utils/CatchAsync.util.js';
 
@@ -14,7 +16,7 @@ export const restrictTo = (...roles) => {
 
         if (!token) throw new AppError('You are not logged in.', 401);
 
-        const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+        const decoded = await promisify(jwt.verify)(token, jwtSecret);
 
         if (!roles.includes(decoded.userRole))
             throw new AppError('You do not have permission to perform this action!', 403);

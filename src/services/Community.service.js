@@ -1,4 +1,4 @@
-import { prisma } from '../db.js';
+import { prisma } from '../config/db';
 
 import { ok, failure } from '../utils/SendResponse.util.js';
 

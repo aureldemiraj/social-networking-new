@@ -6,7 +6,7 @@ import * as EventIndex from './events/index.js';
 
 import { errorMiddleware } from './middlewares/Error.middleware.js';
 
-import { routes } from './routes.js';
+import { routes } from './routes';
 
 import { AppError } from './utils/AppError.util.js';
 

@@ -1,4 +1,5 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
+import { CreateUserInterface } from '../interfaces/User.interface.js';
 
 import { restrictTo } from '../middlewares/Auth.middleware.js';
 
@@ -17,8 +18,8 @@ export const AuthController = Router();
 
 AuthController.post(
     '/register',
-    catchAsync(async (req, res, next) => {
-        const payload = await SignUpValidator.validateAsync(req.body);
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const payload: CreateUserInterface = await SignUpValidator.validateAsync(req.body);
 
         const result = await AuthService.register(payload);
 
@@ -28,9 +29,8 @@ AuthController.post(
 
 AuthController.post(
     '/login',
-    catchAsync(async (req, res, next) => {
-
-        const payload = await LoginValidator.validateAsync(req.body);
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const payload: Pick<CreateUserInterface, 'email' | 'password'> = await LoginValidator.validateAsync(req.body);
 
         const result = await AuthService.login(payload);
 
@@ -40,10 +40,11 @@ AuthController.post(
 
 AuthController.post(
     '/forgot-password',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { email } = await ForgotPasswordValidator.validateAsync(req.body);
 
-        const result = await AuthService.forgotPassword(email, req.protocol, req.get('host'));
+        const host = req.get('host') || '';
+        const result = await AuthService.forgotPassword(email, req.protocol, host);
 
         res.status(result.status).send(result.data);
     })
@@ -51,9 +52,9 @@ AuthController.post(
 
 AuthController.patch(
     '/reset-password/:token',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { token } = req.params;
-     
+
         const { password } = await ResetPasswordValidator.validateAsync(req.body);
 
         const result = await AuthService.resetPassword(token, password);

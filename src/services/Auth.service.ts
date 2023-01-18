@@ -3,39 +3,42 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-import { prisma } from '../db.js';
+import { prisma } from '../config/db.js';
+import { jwtSecret, jwtExpiresIn } from '../config/auth.config.js';
 
 import { ok, failure } from '../utils/SendResponse.util.js';
 
 import { Event } from '../events/Event.js';
 
+import { CreateUserInterface, UserInterface } from '../interfaces/User.interface.js';
+
 export const AuthService = {
-    register: async (payload) => {
+    register: async (payload: CreateUserInterface) => {
         const user = await AuthService.getUserbyEmail(payload.email);
 
         if (user) return failure('User already exists. Please login', 400);
 
         const newUser = await AuthService.createUser(payload);
 
-        const token = AuthService.createToken(newUser);
+        const token = AuthService.createToken(newUser.id, newUser.role);
 
         return ok({ token }, 201);
     },
 
-    login: async (payload) => {
+    login: async (payload: Pick<CreateUserInterface, 'email' | 'password'>) => {
         const user = await AuthService.getUserbyEmail(payload.email);
-        let isPasswordCorrect;
+        let isPasswordCorrect = false;
 
         if (user) isPasswordCorrect = await AuthService.correctPassword(payload.password, user.password);
 
         if (!user || !isPasswordCorrect) return failure('Incorrect email or password', 400);
 
-        const token = AuthService.createToken(user);
+        const token = AuthService.createToken(user.id, user.role);
 
         return ok({ token });
     },
 
-    forgotPassword: async (email, protocol, host) => {
+    forgotPassword: async (email: string, protocol: string, host: string) => {
         const user = await AuthService.getUserbyEmail(email);
 
         if (!user) return failure('No user found with that email');
@@ -63,14 +66,14 @@ export const AuthService = {
         }
     },
 
-    resetPassword: async (resetToken, password) => {
+    resetPassword: async (resetToken: string, password: string) => {
         const user = await AuthService.getUserByResetToken(resetToken);
 
         if (!user) return failure('Token is invalid or has expired!', 400);
 
         await AuthService.updateUserPassword(user.id, password);
 
-        const token = AuthService.createToken(user);
+        const token = AuthService.createToken(user.id, user.role);
 
         return ok({ token });
     },
@@ -79,12 +82,12 @@ export const AuthService = {
         return ok({ message: 'You have been Logged Out', token: null });
     },
 
-    createUser: async (payload) => {
+    createUser: async (payload: CreateUserInterface) => {
         const encryptedPassword = await bcrypt.hash(payload.password, 12);
 
         const { email, fullName, birthDate, education } = payload;
 
-        const newUser = await prisma.user.create({
+        const newUser: Omit<UserInterface, 'password'> = await prisma.user.create({
             data: {
                 email: email.toLowerCase(),
                 fullName,
@@ -103,7 +106,7 @@ export const AuthService = {
         return newUser;
     },
 
-    getUserbyEmail: async (email) => {
+    getUserbyEmail: async (email: string): Promise<Omit<UserInterface, 'fullName'> | null> => {
         return prisma.user.findUnique({
             where: {
                 email,
@@ -117,21 +120,19 @@ export const AuthService = {
         });
     },
 
-    createToken: (user) => {
-        const userId = user.id;
-        const userRole = user.role;
-        const token = jwt.sign({ userId, userRole }, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES_IN,
+    createToken: (userId: string, userRole: string) => {
+        const token = jwt.sign({ userId, userRole }, jwtSecret, {
+            expiresIn: jwtExpiresIn,
         });
 
         return token;
     },
 
-    correctPassword: async (candidatePassword, userPassword) => {
+    correctPassword: async (candidatePassword: string, userPassword: string) => {
         return bcrypt.compare(candidatePassword, userPassword);
     },
 
-    createPasswordResetToken: async (userEmail) => {
+    createPasswordResetToken: async (userEmail: string) => {
         const resetToken = crypto.randomBytes(32).toString('hex');
 
         const passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
@@ -142,7 +143,11 @@ export const AuthService = {
         return resetToken;
     },
 
-    updateUserForResetPassword: async (userEmail, passwordResetToken, passwordResetExpires) => {
+    updateUserForResetPassword: async (
+        userEmail: string,
+        passwordResetToken: string | null,
+        passwordResetExpires: Date | null
+    ) => {
         await prisma.user.update({
             where: {
                 email: userEmail,
@@ -154,10 +159,10 @@ export const AuthService = {
         });
     },
 
-    getUserByResetToken: async (passwordResetToken) => {
+    getUserByResetToken: async (passwordResetToken: string) => {
         const hashedPassword = crypto.createHash('sha256').update(passwordResetToken).digest('hex');
 
-        const user = await prisma.user.findFirst({
+        const user: Pick<UserInterface, 'id' | 'role'> | null = await prisma.user.findFirst({
             where: {
                 passwordResetToken: hashedPassword,
                 passwordResetExpires: {
@@ -173,7 +178,7 @@ export const AuthService = {
         return user;
     },
 
-    updateUserPassword: async (userId, password) => {
+    updateUserPassword: async (userId: string, password: string) => {
         const encryptedPassword = await bcrypt.hash(password, 12);
 
         await prisma.user.update({

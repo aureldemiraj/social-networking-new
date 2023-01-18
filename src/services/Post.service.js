@@ -1,4 +1,4 @@
-import { prisma } from '../db.js';
+import { prisma } from '../config/db';
 
 import { CommunityService } from './Community.service.js';
 

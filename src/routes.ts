@@ -5,8 +5,10 @@ import { MeController } from './controllers/Me.controller.js';
 import { PostController } from './controllers/Post.controller.js';
 import { UserController } from './controllers/User.controller.js';
 
-export function routes(app) {
-    const _routes = [
+import { Express, Router } from 'express';
+
+export function routes(app: Express) {
+    const _routes: [string, Router][] = [
         ['communities', CommunityController],
         ['users', UserController],
         ['events', EventController],
