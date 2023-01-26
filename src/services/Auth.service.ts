@@ -1,16 +1,16 @@
 import crypto from 'crypto';
 
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/auth.config';
 import { prisma } from '../config/db';
-import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/email.config';
-
-import { ok, failure } from '../utils/SendResponse.util.js';
 
 import { Event } from '../events/Event.js';
 
 import { CreateUserInterface, UserInterface } from '../interfaces/User.interface.js';
+
+import { ok, failure } from '../utils/SendResponse.util.js';
 
 export const AuthService = {
     register: async (payload: CreateUserInterface) => {
