@@ -121,9 +121,6 @@ export const AuthService = {
     },
 
     createToken: (userId: string, userRole: string) => {
-        console.log(JWT_EXPIRES_IN);
-        console.log('tes');
-        console.log(JWT_SECRET);
         const token = jwt.sign({ userId, userRole }, JWT_SECRET, {
             expiresIn: JWT_EXPIRES_IN,
         });
