@@ -1,9 +1,9 @@
-import { AuthController } from './controllers/Auth.controller.js';
-import { CommunityController } from './controllers/Community.controller.js';
-import { EventController } from './controllers/Event.controller.js';
-import { MeController } from './controllers/Me.controller.js';
-import { PostController } from './controllers/Post.controller.js';
-import { UserController } from './controllers/User.controller.js';
+import { AuthController } from './controllers/Auth.controller';
+import { CommunityController } from './controllers/Community.controller';
+import { EventController } from './controllers/Event.controller';
+import { MeController } from './controllers/Me.controller';
+import { PostController } from './controllers/Post.controller';
+import { UserController } from './controllers/User.controller';
 
 import { Express, Router } from 'express';
 

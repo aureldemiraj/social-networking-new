@@ -2,19 +2,14 @@ import { NextFunction, Request, Response, Router } from 'express';
 
 import { CreateUserInterface } from '../interfaces/User.interface';
 
-import { restrictTo } from '../middlewares/Auth.middleware.js';
+import { restrictTo } from '../middlewares/Auth.middleware';
 import { validate } from '../middlewares/Validation.middleware';
 
 import { AuthService } from '../services/Auth.service';
 
-import { catchAsync } from '../utils/CatchAsync.util.js';
+import { catchAsync } from '../utils/CatchAsync.util';
 
-import {
-    ForgotPasswordValidator,
-    LoginValidator,
-    ResetPasswordValidator,
-    SignUpValidator,
-} from '../validators/index.js';
+import { ForgotPasswordValidator, LoginValidator, ResetPasswordValidator, SignUpValidator } from '../validators';
 
 export const AuthController = Router();
 

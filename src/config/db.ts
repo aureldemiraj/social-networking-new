@@ -1,3 +1,3 @@
 import { PrismaClient } from '@prisma/client';
 
-export const prisma = new PrismaClient();
+export const { community, event, eventSubscribers, post, user, usersOnCommunities } = new PrismaClient();

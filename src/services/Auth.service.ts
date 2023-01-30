@@ -4,13 +4,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/auth.config';
-import { prisma } from '../config/db';
+import { user } from '../config/db';
 
-import { Event } from '../events/Event.js';
+import { Event } from '../events/Event';
 
-import { CreateUserInterface, UserInterface } from '../interfaces/User.interface.js';
+import { CreateUserInterface, UserInterface } from '../interfaces/User.interface';
 
-import { ok, failure } from '../utils/SendResponse.util.js';
+import { ok, failure } from '../utils/SendResponse.util';
 
 export const AuthService = {
     register: async (payload: CreateUserInterface) => {
@@ -87,7 +87,7 @@ export const AuthService = {
 
         const { email, fullName, birthDate, education } = payload;
 
-        const newUser: Omit<UserInterface, 'password'> = await prisma.user.create({
+        const newUser: Omit<UserInterface, 'password'> = await user.create({
             data: {
                 email: email.toLowerCase(),
                 fullName,
@@ -107,7 +107,7 @@ export const AuthService = {
     },
 
     getUserbyEmail: async (email: string): Promise<Omit<UserInterface, 'fullName'> | null> => {
-        return prisma.user.findUnique({
+        return user.findUnique({
             where: {
                 email,
             },
@@ -148,7 +148,7 @@ export const AuthService = {
         passwordResetToken: string | null,
         passwordResetExpires: Date | null
     ) => {
-        await prisma.user.update({
+        await user.update({
             where: {
                 email: userEmail,
             },
@@ -162,7 +162,7 @@ export const AuthService = {
     getUserByResetToken: async (passwordResetToken: string) => {
         const hashedPassword = crypto.createHash('sha256').update(passwordResetToken).digest('hex');
 
-        const user: Pick<UserInterface, 'id' | 'role'> | null = await prisma.user.findFirst({
+        const userFound: Pick<UserInterface, 'id' | 'role'> | null = await user.findFirst({
             where: {
                 passwordResetToken: hashedPassword,
                 passwordResetExpires: {
@@ -175,13 +175,13 @@ export const AuthService = {
             },
         });
 
-        return user;
+        return userFound;
     },
 
     updateUserPassword: async (userId: string, password: string) => {
         const encryptedPassword = await bcrypt.hash(password, 12);
 
-        await prisma.user.update({
+        await user.update({
             where: {
                 id: userId,
             },

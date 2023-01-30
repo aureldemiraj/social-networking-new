@@ -2,13 +2,13 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 
-import * as EventIndex from './events/index.js';
+import * as EventIndex from './events/index';
 
-import { errorMiddleware } from './middlewares/Error.middleware.js';
+import { errorMiddleware } from './middlewares/Error.middleware';
 
 import { routes } from './routes';
 
-import { AppError } from './utils/AppError.util.js';
+import { AppError } from './utils/AppError.util';
 
 export const app = express();
 
