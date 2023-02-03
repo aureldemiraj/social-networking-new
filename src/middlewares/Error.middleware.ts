@@ -1,12 +1,14 @@
-import { AppError } from '../utils/AppError.util.js';
+import { ErrorRequestHandler } from 'express';
+
+import { AppError } from '../utils/AppError.util';
 
 const handleJWTError = () => new AppError('Invalid token. Please log in again!', 401);
 
 const handleJWTExpiredError = () => new AppError('Your token has expired! Please log in again.', 401);
 
-const handleValidationError = (err) => new AppError(`Invalid data input. ${err.message}`, 400);
+const handleValidationError = (err: any) => new AppError(`Invalid data input. ${err.message}`, 400);
 
-export const errorMiddleware = (err, req, res, next) => {
+export const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
 
@@ -21,15 +23,8 @@ export const errorMiddleware = (err, req, res, next) => {
     else if (error.name == 'JsonWebTokenError') error = handleJWTError();
     else if (error.name == 'TokenExpiredError') error = handleJWTExpiredError();
 
-    if (error.isOperational) {
-        return res.status(error.statusCode).json({
-            status: error.status,
-            message: error.message,
-        });
-    } else {
-        return res.status(error.statusCode).json({
-            status: error.status,
-            message: 'Something went wrong! Please try again later',
-        });
-    }
+    return res.status(error.statusCode).send({
+        status: error.status,
+        message: error.isOperational ? error.message : 'Something went wrong! Please try again later',
+    });
 };
