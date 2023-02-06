@@ -1,21 +1,24 @@
-import express from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 
-import { restrictTo } from '../middlewares/Auth.middleware.js';
-import { checkEventOrganizer } from '../middlewares/CheckEventOrganizer.middleware.js';
+import { RequestWithData } from '../interfaces/Auth.interface';
 
-import { EventService } from '../services/Event.service.js';
+import { restrictTo } from '../middlewares/Auth.middleware';
+import { checkEventOrganizer } from '../middlewares/CheckEventOrganizer.middleware';
+import { validate } from '../middlewares/Validation.middleware';
 
-import { catchAsync } from '../utils/CatchAsync.util.js';
+import { EventService } from '../services/Event.service';
 
-import { CreateEventValidator } from '../validators/index.js';
+import { catchAsync } from '../utils/CatchAsync.util';
 
-export const EventController = express.Router();
+import { CreateEventValidator } from '../validators/index';
+
+export const EventController = Router();
 
 EventController.use(restrictTo('USER', 'ADMIN'));
 
 EventController.get(
     '/',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const result = await EventService.getAllEvents();
 
         res.status(result.status).send(result.data);
@@ -24,7 +27,7 @@ EventController.get(
 
 EventController.get(
     '/:eventId',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { eventId } = req.params;
 
         const result = await EventService.getEvent(eventId);
@@ -36,11 +39,10 @@ EventController.get(
 EventController.put(
     '/:eventId',
     checkEventOrganizer,
-    catchAsync(async (req, res, next) => {
+    validate(CreateEventValidator),
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { eventId } = req.params;
-        const payload = await CreateEventValidator.validateAsync(req.body);
-
-        const result = await EventService.updateEventbyId(payload, eventId);
+        const result = await EventService.updateEventbyId(req.body, eventId);
 
         res.status(result.status).send(result.data);
     })
@@ -49,7 +51,7 @@ EventController.put(
 EventController.delete(
     '/:eventId',
     checkEventOrganizer,
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { eventId } = req.params;
 
         const result = await EventService.deleteEventbyId(eventId);
@@ -60,7 +62,7 @@ EventController.delete(
 
 EventController.post(
     '/:eventId/subscribe',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { eventId } = req.params;
         const { userId } = req;
 
@@ -72,7 +74,7 @@ EventController.post(
 
 EventController.post(
     '/:eventId/unsubscribe',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { eventId } = req.params;
         const { userId } = req;
 
@@ -84,7 +86,7 @@ EventController.post(
 
 EventController.get(
     '/:eventId/subscribers',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { eventId } = req.params;
 
         const result = await EventService.getAllEventSubscribers(eventId);

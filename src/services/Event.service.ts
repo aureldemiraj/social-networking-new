@@ -1,12 +1,14 @@
-import { prisma } from '../config/db';
+import { event, eventSubscribers, user } from '../config/db';
 
-import { CommunityService } from './Community.service.js';
+import { EventInterface } from '../interfaces/Event.interface';
 
-import { ok, failure } from '../utils/SendResponse.util.js';
+import { CommunityService } from './Community.service';
+
+import { ok, failure } from '../utils/SendResponse.util';
 
 export const EventService = {
     getAllEvents: async () => {
-        const allEvents = await prisma.event.findMany({
+        const allEvents = await event.findMany({
             where: {
                 eventTime: {
                     gte: new Date(),
@@ -29,12 +31,12 @@ export const EventService = {
         return ok(allEvents);
     },
 
-    getEventsByCommunityId: async (communityId) => {
+    getEventsByCommunityId: async (communityId: string) => {
         const community = await CommunityService.getCommunityById(communityId);
 
         if (!community) return failure('No community found with that ID.');
 
-        const allEvents = await prisma.event.findMany({
+        const allEvents = await event.findMany({
             where: {
                 AND: [
                     {
@@ -62,10 +64,14 @@ export const EventService = {
         return ok(allEvents);
     },
 
-    createNewEvent: async (payload, communityId, eventOrganizer) => {
+    createNewEvent: async (
+        payload: Omit<EventInterface, 'eventOrganizer' | 'communityId'>,
+        communityId: string,
+        eventOrganizer: string
+    ) => {
         const { name, description, location, eventTime } = payload;
 
-        const newEvent = await prisma.event.create({
+        const newEvent = await event.create({
             data: {
                 name,
                 description,
@@ -88,8 +94,8 @@ export const EventService = {
         return ok(newEvent, 201);
     },
 
-    getMyEvents: async (userId) => {
-        const myEvents = await prisma.event.findMany({
+    getMyEvents: async (userId: string) => {
+        const myEvents = await event.findMany({
             where: {
                 eventOrganizer: userId,
             },
@@ -107,8 +113,8 @@ export const EventService = {
         return ok(myEvents);
     },
 
-    getSubscribedEvents: async (userId) => {
-        const subscribedEvents = await prisma.event.findMany({
+    getSubscribedEvents: async (userId: string) => {
+        const subscribedEvents = await event.findMany({
             where: {
                 eventTime: {
                     gte: new Date(),
@@ -136,8 +142,8 @@ export const EventService = {
         return ok(subscribedEvents);
     },
 
-    getEventById: async (id) => {
-        return prisma.event.findUnique({
+    getEventById: async (id: string): Promise<EventInterface | null> => {
+        return event.findUnique({
             where: {
                 id,
             },
@@ -153,7 +159,7 @@ export const EventService = {
         });
     },
 
-    getEvent: async (id) => {
+    getEvent: async (id: string) => {
         const event = await EventService.getEventById(id);
 
         if (!event) return failure('No event found with that ID.');
@@ -161,14 +167,14 @@ export const EventService = {
         return ok(event);
     },
 
-    updateEventbyId: async (payload, id) => {
+    updateEventbyId: async (payload: Omit<EventInterface, 'eventOrganizer' | 'communityId'>, id: string) => {
         const { name, description, location, eventTime } = payload;
 
-        const event = await EventService.getEventById(id);
+        const eventFound = await EventService.getEventById(id);
 
-        if (!event) return failure('No event found with that ID.');
+        if (!eventFound) return failure('No event found with that ID.');
 
-        const updatedEvent = await prisma.event.update({
+        const updatedEvent = await event.update({
             where: {
                 id,
             },
@@ -192,12 +198,12 @@ export const EventService = {
         return ok(updatedEvent);
     },
 
-    deleteEventbyId: async (id) => {
-        const event = await EventService.getEventById(id);
+    deleteEventbyId: async (id: string) => {
+        const eventFound = await EventService.getEventById(id);
 
-        if (!event) return failure('No event found with that ID.');
+        if (!eventFound) return failure('No event found with that ID.');
 
-        const deletedEvent = await prisma.event.delete({
+        const deletedEvent = await event.delete({
             where: {
                 id,
             },
@@ -206,16 +212,16 @@ export const EventService = {
         return ok(deletedEvent, 204);
     },
 
-    subscribeEvent: async (eventId, subscriberId) => {
-        const event = await EventService.getEventById(eventId);
+    subscribeEvent: async (eventId: string, subscriberId: string) => {
+        const eventFound = await EventService.getEventById(eventId);
 
-        if (!event) return failure('No event found with that ID.');
+        if (!eventFound) return failure('No event found with that ID.');
 
         const userEvent = await EventService.isUserSubscribed(subscriberId, eventId);
 
         if (userEvent) return failure('You are already subscribed to this event.', 400);
 
-        const subscribedEvent = await prisma.eventSubscribers.create({
+        const subscribedEvent = await eventSubscribers.create({
             data: {
                 eventId,
                 subscriberId,
@@ -225,16 +231,16 @@ export const EventService = {
         return ok(subscribedEvent);
     },
 
-    unsubscribeEvent: async (eventId, subscriberId) => {
-        const event = await EventService.getEventById(eventId);
+    unsubscribeEvent: async (eventId: string, subscriberId: string) => {
+        const eventFound = await EventService.getEventById(eventId);
 
-        if (!event) return failure('No event found with that ID.');
+        if (!eventFound) return failure('No event found with that ID.');
 
         const userEvent = await EventService.isUserSubscribed(subscriberId, eventId);
 
         if (!userEvent) return failure("You aren't subscribed to this event.", 400);
 
-        const unsubscribedEvent = await prisma.eventSubscribers.delete({
+        const unsubscribedEvent = await eventSubscribers.delete({
             where: {
                 eventSubscribers: { eventId, subscriberId },
             },
@@ -243,12 +249,12 @@ export const EventService = {
         return ok(unsubscribedEvent);
     },
 
-    getAllEventSubscribers: async (eventId) => {
-        const event = await EventService.getEventById(eventId);
+    getAllEventSubscribers: async (eventId: string) => {
+        const eventFound = await EventService.getEventById(eventId);
 
-        if (!event) return failure('No event found with that ID.');
+        if (!eventFound) return failure('No event found with that ID.');
 
-        const subscribers = await prisma.user.findMany({
+        const subscribers = await user.findMany({
             where: {
                 subscriptions: {
                     some: {
@@ -266,8 +272,8 @@ export const EventService = {
         return ok(subscribers);
     },
 
-    isUserSubscribed: async (subscriberId, eventId) => {
-        return prisma.eventSubscribers.findUnique({
+    isUserSubscribed: async (subscriberId: string, eventId: string) => {
+        return eventSubscribers.findUnique({
             where: {
                 eventSubscribers: { eventId, subscriberId },
             },

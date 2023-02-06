@@ -1,16 +1,18 @@
-import { prisma } from '../config/db';
+import { post } from '../config/db';
 
-import { CommunityService } from './Community.service.js';
+import { PostInterface } from '../interfaces/Post.interface';
 
-import { ok, failure } from '../utils/SendResponse.util.js';
+import { CommunityService } from './Community.service';
+
+import { ok, failure } from '../utils/SendResponse.util';
 
 export const PostService = {
-    getAllPosts: async (communityId) => {
+    getAllPosts: async (communityId: string) => {
         const community = await CommunityService.getCommunityById(communityId);
 
         if (!community) return failure('No community found with that ID.');
 
-        const allPosts = await prisma.post.findMany({
+        const allPosts = await post.findMany({
             where: {
                 communityId,
             },
@@ -26,14 +28,14 @@ export const PostService = {
         return ok(allPosts);
     },
 
-    createNewPost: async (payload, communityId, authorId) => {
+    createNewPost: async (payload: PostInterface, communityId: string, authorId: string) => {
         const community = await CommunityService.getCommunityById(communityId);
 
         if (!community) return failure('No community found with that ID.');
 
         const { title, body } = payload;
 
-        const newPost = await prisma.post.create({
+        const newPost = await post.create({
             data: {
                 title,
                 body,
@@ -52,16 +54,16 @@ export const PostService = {
         return ok(newPost, 201);
     },
 
-    getPostById: async (id) => {
-        const post = PostService.getPost(id);
+    getPostById: async (id: string) => {
+        const post = await PostService.getPost(id);
 
         if (!post) return failure('No post found with that ID');
 
         return ok(post);
     },
 
-    getPost: async (id) => {
-        return prisma.post.findUnique({
+    getPost: async (id: string) => {
+        return post.findUnique({
             where: {
                 id,
             },
@@ -75,10 +77,10 @@ export const PostService = {
         });
     },
 
-    updatePostbyId: async (payload, id) => {
+    updatePostbyId: async (payload: PostInterface, id: string) => {
         const { title, body } = payload;
 
-        const updatedPost = await prisma.post.update({
+        const updatedPost = await post.update({
             where: {
                 id,
             },
@@ -100,8 +102,8 @@ export const PostService = {
         return ok(updatedPost);
     },
 
-    deletePostbyId: async (id) => {
-        const post = await prisma.post.delete({
+    deletePostbyId: async (id: string) => {
+        const postFound = await post.delete({
             where: {
                 id,
             },
@@ -114,8 +116,8 @@ export const PostService = {
             },
         });
 
-        if (!post) return failure('No post found with that ID');
+        if (!postFound) return failure('No post found with that ID');
 
-        return ok(post);
+        return ok(postFound);
     },
 };
