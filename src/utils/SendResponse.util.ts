@@ -5,7 +5,7 @@ export const ok = (data: Object, status = 200) => {
     };
 };
 
-export const failure = (message: string, status = 404) => ({
+export const failure = (message: string, status = 400) => ({
     status,
     data: {
         message,
