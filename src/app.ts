@@ -2,7 +2,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 
-import * as EventIndex from './events/index';
+import * as EventIndex from './events';
 
 import { errorMiddleware } from './middlewares/Error.middleware';
 

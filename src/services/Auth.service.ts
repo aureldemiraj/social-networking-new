@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/auth.config';
 import { user } from '../config/db';
 
-import { Event } from '../events/Event';
+import { Event } from '../events/Events';
 
 import { CreateUserInterface, UserInterface } from '../interfaces/User.interface';
 

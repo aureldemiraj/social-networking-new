@@ -1,2 +1,2 @@
-import * as events from './Event';
-import * as EmailEvent from './EmailEvent';
+import * as events from './Events';
+import * as EmailEvent from './Email.event';

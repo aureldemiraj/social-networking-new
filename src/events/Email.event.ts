@@ -1,4 +1,4 @@
-import { Event } from './Event';
+import { Event } from './Events';
 
 import { sendEmail } from '../utils/Email.util';
 
