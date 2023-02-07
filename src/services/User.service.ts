@@ -1,10 +1,10 @@
-import { prisma } from '../config/db';
+import { user } from '../config/db';
 
-import { ok, failure } from '../utils/SendResponse.util.js';
+import { ok, failure } from '../utils/SendResponse.util';
 
 export const UserService = {
     getAllUsers: async () => {
-        const users = await prisma.user.findMany({
+        const users = await user.findMany({
             select: {
                 id: true,
                 fullName: true,
@@ -18,8 +18,8 @@ export const UserService = {
         return ok(users);
     },
 
-    getUserbyId: async (id) => {
-        return prisma.user.findUnique({
+    getUserbyId: async (id: string) => {
+        return user.findUnique({
             where: {
                 id,
             },
@@ -33,7 +33,7 @@ export const UserService = {
         });
     },
 
-    getUser: async (id) => {
+    getUser: async (id: string) => {
         const user = await UserService.getUserbyId(id);
 
         if (!user) return failure('No user found with that ID');
@@ -41,8 +41,8 @@ export const UserService = {
         return ok(user);
     },
 
-    deleteUserById: async (userId) => {
-        const deletedUser = await prisma.user.delete({
+    deleteUserById: async (userId: string) => {
+        const deletedUser = await user.delete({
             where: {
                 id: userId,
             },

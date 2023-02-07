@@ -1,12 +1,14 @@
-import { Router } from 'express';
+import { NextFunction, Response, Router } from 'express';
 
-import { restrictTo } from '../middlewares/Auth.middleware.js';
+import { RequestWithData } from '../interfaces/Auth.interface';
 
-import { EventService } from '../services/Event.service.js';
-import { CommunityService } from '../services/Community.service.js';
-import { UserService } from '../services/User.service.js';
+import { restrictTo } from '../middlewares/Auth.middleware';
 
-import { catchAsync } from '../utils/CatchAsync.util.js';
+import { CommunityService } from '../services/Community.service';
+import { EventService } from '../services/Event.service';
+import { UserService } from '../services/User.service';
+
+import { catchAsync } from '../utils/CatchAsync.util';
 
 export const MeController = Router();
 
@@ -14,7 +16,7 @@ MeController.use(restrictTo('USER', 'ADMIN'));
 
 MeController.get(
     '/',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { userId } = req;
 
         const result = await UserService.getUser(userId);
@@ -25,7 +27,7 @@ MeController.get(
 
 MeController.delete(
     '/',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { userId } = req;
 
         const result = await UserService.deleteUserById(userId);
@@ -36,7 +38,7 @@ MeController.delete(
 
 MeController.get(
     '/communities',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { userId } = req;
 
         const result = await CommunityService.getMyCommunities(userId);
@@ -47,7 +49,7 @@ MeController.get(
 
 MeController.get(
     '/events',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { userId } = req;
 
         const result = await EventService.getMyEvents(userId);
@@ -58,7 +60,7 @@ MeController.get(
 
 MeController.get(
     '/subscribed-events',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { userId } = req;
 
         const result = await EventService.getSubscribedEvents(userId);
