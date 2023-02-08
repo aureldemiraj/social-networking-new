@@ -1,4 +1,4 @@
-import { post } from '../config/db';
+import { post as PostModel } from '../config/db';
 
 import { PostInterface } from '../interfaces/Post.interface';
 
@@ -12,7 +12,7 @@ export const PostService = {
 
         if (!community) return failure('No community found with that ID.');
 
-        const allPosts = await post.findMany({
+        const allPosts = await PostModel.findMany({
             where: {
                 communityId,
             },
@@ -35,7 +35,7 @@ export const PostService = {
 
         const { title, body } = payload;
 
-        const newPost = await post.create({
+        const newPost = await PostModel.create({
             data: {
                 title,
                 body,
@@ -63,7 +63,7 @@ export const PostService = {
     },
 
     getPost: async (id: string) => {
-        return post.findUnique({
+        return PostModel.findUnique({
             where: {
                 id,
             },
@@ -80,7 +80,7 @@ export const PostService = {
     updatePostbyId: async (payload: PostInterface, id: string) => {
         const { title, body } = payload;
 
-        const updatedPost = await post.update({
+        const updatedPost = await PostModel.update({
             where: {
                 id,
             },
@@ -103,7 +103,7 @@ export const PostService = {
     },
 
     deletePostbyId: async (id: string) => {
-        const postFound = await post.delete({
+        const post = await PostModel.delete({
             where: {
                 id,
             },
@@ -116,8 +116,8 @@ export const PostService = {
             },
         });
 
-        if (!postFound) return failure('No post found with that ID');
+        if (!post) return failure('No post found with that ID');
 
-        return ok(postFound);
+        return ok(post);
     },
 };

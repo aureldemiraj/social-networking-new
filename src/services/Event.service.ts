@@ -1,4 +1,4 @@
-import { event, eventSubscribers, user } from '../config/db';
+import { event as EventModel, eventSubscribers, user as UserModel } from '../config/db';
 
 import { EventInterface } from '../interfaces/Event.interface';
 
@@ -8,7 +8,7 @@ import { ok, failure } from '../utils/SendResponse.util';
 
 export const EventService = {
     getAllEvents: async () => {
-        const allEvents = await event.findMany({
+        const allEvents = await EventModel.findMany({
             where: {
                 eventTime: {
                     gte: new Date(),
@@ -36,7 +36,7 @@ export const EventService = {
 
         if (!community) return failure('No community found with that ID.');
 
-        const allEvents = await event.findMany({
+        const allEvents = await EventModel.findMany({
             where: {
                 AND: [
                     {
@@ -71,7 +71,7 @@ export const EventService = {
     ) => {
         const { name, description, location, eventTime } = payload;
 
-        const newEvent = await event.create({
+        const newEvent = await EventModel.create({
             data: {
                 name,
                 description,
@@ -95,7 +95,7 @@ export const EventService = {
     },
 
     getMyEvents: async (userId: string) => {
-        const myEvents = await event.findMany({
+        const myEvents = await EventModel.findMany({
             where: {
                 eventOrganizer: userId,
             },
@@ -114,7 +114,7 @@ export const EventService = {
     },
 
     getSubscribedEvents: async (userId: string) => {
-        const subscribedEvents = await event.findMany({
+        const subscribedEvents = await EventModel.findMany({
             where: {
                 eventTime: {
                     gte: new Date(),
@@ -143,7 +143,7 @@ export const EventService = {
     },
 
     getEventById: async (id: string): Promise<EventInterface | null> => {
-        return event.findUnique({
+        return EventModel.findUnique({
             where: {
                 id,
             },
@@ -170,11 +170,11 @@ export const EventService = {
     updateEventbyId: async (payload: Omit<EventInterface, 'eventOrganizer' | 'communityId'>, id: string) => {
         const { name, description, location, eventTime } = payload;
 
-        const eventFound = await EventService.getEventById(id);
+        const event = await EventService.getEventById(id);
 
-        if (!eventFound) return failure('No event found with that ID.');
+        if (!event) return failure('No event found with that ID.');
 
-        const updatedEvent = await event.update({
+        const updatedEvent = await EventModel.update({
             where: {
                 id,
             },
@@ -199,11 +199,11 @@ export const EventService = {
     },
 
     deleteEventbyId: async (id: string) => {
-        const eventFound = await EventService.getEventById(id);
+        const event = await EventService.getEventById(id);
 
-        if (!eventFound) return failure('No event found with that ID.');
+        if (!event) return failure('No event found with that ID.');
 
-        const deletedEvent = await event.delete({
+        const deletedEvent = await EventModel.delete({
             where: {
                 id,
             },
@@ -213,9 +213,9 @@ export const EventService = {
     },
 
     subscribeEvent: async (eventId: string, subscriberId: string) => {
-        const eventFound = await EventService.getEventById(eventId);
+        const event = await EventService.getEventById(eventId);
 
-        if (!eventFound) return failure('No event found with that ID.');
+        if (!event) return failure('No event found with that ID.');
 
         const userEvent = await EventService.isUserSubscribed(subscriberId, eventId);
 
@@ -232,9 +232,9 @@ export const EventService = {
     },
 
     unsubscribeEvent: async (eventId: string, subscriberId: string) => {
-        const eventFound = await EventService.getEventById(eventId);
+        const event = await EventService.getEventById(eventId);
 
-        if (!eventFound) return failure('No event found with that ID.');
+        if (!event) return failure('No event found with that ID.');
 
         const userEvent = await EventService.isUserSubscribed(subscriberId, eventId);
 
@@ -250,11 +250,11 @@ export const EventService = {
     },
 
     getAllEventSubscribers: async (eventId: string) => {
-        const eventFound = await EventService.getEventById(eventId);
+        const event = await EventService.getEventById(eventId);
 
-        if (!eventFound) return failure('No event found with that ID.');
+        if (!event) return failure('No event found with that ID.');
 
-        const subscribers = await user.findMany({
+        const subscribers = await UserModel.findMany({
             where: {
                 subscriptions: {
                     some: {
