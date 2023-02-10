@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-export interface DataStoredInToken {
+export interface TokenPayload {
     userId: string;
     userRole: string;
 }

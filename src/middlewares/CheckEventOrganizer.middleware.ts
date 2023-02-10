@@ -2,6 +2,7 @@ import { NextFunction, Response } from 'express';
 
 import { RequestWithData } from '../interfaces/Auth.interface';
 
+import { AuthService } from '../services/Auth.service';
 import { EventService } from '../services/Event.service';
 
 import { AppError } from '../utils/AppError.util';
@@ -15,8 +16,7 @@ export const checkEventOrganizer = catchAsync(async (req: RequestWithData, res: 
 
     if (!event) throw new AppError('No event found with that ID', 404);
 
-    if (!(event.eventOrganizer == userId || req.userRole == 'ADMIN'))
-        throw new AppError('You can only edit or delete your events', 403);
+    await AuthService.checkEventOrganizer(event.eventOrganizer, userId, req.userRole);
 
     next();
 });

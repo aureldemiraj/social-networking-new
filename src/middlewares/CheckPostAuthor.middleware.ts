@@ -2,6 +2,7 @@ import { NextFunction, Response } from 'express';
 
 import { RequestWithData } from '../interfaces/Auth.interface';
 
+import { AuthService } from '../services/Auth.service';
 import { PostService } from '../services/Post.service';
 
 import { AppError } from '../utils/AppError.util';
@@ -15,8 +16,7 @@ export const checkPostAuthor = catchAsync(async (req: RequestWithData, res: Resp
 
     if (!post) throw new AppError('No post found with that ID', 404);
 
-    if (!(post.authorId == userId || req.userRole == 'ADMIN'))
-        throw new AppError('You can only edit or delete your posts', 403);
+    await AuthService.checkPostAuthor(post.authorId, userId, req.userRole);
 
     next();
 });

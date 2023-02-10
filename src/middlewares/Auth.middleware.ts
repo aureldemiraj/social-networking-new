@@ -1,9 +1,8 @@
 import { NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 
-import { JWT_SECRET } from '../config/auth.config';
+import { RequestWithData } from '../interfaces/Auth.interface';
 
-import { DataStoredInToken, RequestWithData } from '../interfaces/Auth.interface';
+import { AuthService } from '../services/Auth.service';
 
 import { AppError } from '../utils/AppError.util';
 import { catchAsync } from '../utils/CatchAsync.util';
@@ -17,10 +16,7 @@ export const restrictTo = (...roles: String[]) => {
 
         if (!token) throw new AppError('You are not logged in.', 401);
 
-        const decoded = jwt.verify(token, JWT_SECRET) as DataStoredInToken;
-
-        if (!roles.includes(decoded.userRole))
-            throw new AppError('You do not have permission to perform this action!', 403);
+        const decoded = await AuthService.verifyToken(token, roles);
 
         req.userId = decoded.userId;
         req.userRole = decoded.userRole;
