@@ -1,21 +1,24 @@
-import { Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 
-import { restrictTo } from '../middlewares/Auth.middleware.js';
-import { checkIfJoined } from '../middlewares/CheckIfJoined.middleware.js';
+import { RequestWithData } from '../interfaces/Auth.interface';
 
-import { CommunityService } from '../services/Community.service.js';
-import { EventService } from '../services/Event.service.js';
-import { PostService } from '../services/Post.service.js';
+import { restrictTo } from '../middlewares/Auth.middleware';
+import { checkIfJoined } from '../middlewares/CheckIfJoined.middleware';
+import { validate } from '../middlewares/Validation.middleware';
 
-import { catchAsync } from '../utils/CatchAsync.util.js';
+import { CommunityService } from '../services/Community.service';
+import { EventService } from '../services/Event.service';
+import { PostService } from '../services/Post.service';
 
-import { CreateCommunityValidator, CreateEventValidator, CreatePostValidator } from '../validators/index.js';
+import { catchAsync } from '../utils/CatchAsync.util';
+
+import { CreateCommunityValidator, CreateEventValidator, CreatePostValidator } from '../validators/index';
 
 export const CommunityController = Router();
 
 CommunityController.get(
     '/',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const result = await CommunityService.getAllCommunities();
 
         res.status(result.status).send(result.data);
@@ -25,8 +28,9 @@ CommunityController.get(
 CommunityController.post(
     '/',
     restrictTo('ADMIN'),
-    catchAsync(async (req, res, next) => {
-        const { name, description } = await CreateCommunityValidator.validateAsync(req.body);
+    validate(CreateCommunityValidator),
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const { name, description } = req.body;
 
         const result = await CommunityService.createNewCommunity(name, description);
 
@@ -36,8 +40,8 @@ CommunityController.post(
 
 CommunityController.get(
     '/most-active-communities',
-    catchAsync(async (req, res, next) => {
-        const queryString = req.query;
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+        const queryString = req.query as Record<string, string>;
 
         const result = await CommunityService.topMostActiveCommunities(queryString);
 
@@ -47,7 +51,7 @@ CommunityController.get(
 
 CommunityController.get(
     '/largest-communities',
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const result = await CommunityService.topLargestCommunities();
 
         res.status(result.status).send(result.data);
@@ -57,7 +61,7 @@ CommunityController.get(
 CommunityController.get(
     '/:communityId',
     restrictTo('USER', 'ADMIN'),
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
 
         const result = await CommunityService.getCommunity(communityId);
@@ -69,7 +73,7 @@ CommunityController.get(
 CommunityController.delete(
     '/:communityId',
     restrictTo('ADMIN'),
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
 
         const result = await CommunityService.deleteCommunityById(communityId);
@@ -81,7 +85,7 @@ CommunityController.delete(
 CommunityController.post(
     '/:communityId/join',
     restrictTo('USER', 'ADMIN'),
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
         const { userId } = req;
 
@@ -94,7 +98,7 @@ CommunityController.post(
 CommunityController.post(
     '/:communityId/leave',
     restrictTo('USER', 'ADMIN'),
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
         const { userId } = req;
 
@@ -107,7 +111,7 @@ CommunityController.post(
 CommunityController.get(
     '/:communityId/events',
     restrictTo('USER', 'ADMIN'),
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
 
         const result = await EventService.getEventsByCommunityId(communityId);
@@ -120,12 +124,12 @@ CommunityController.post(
     '/:communityId/events',
     restrictTo('USER', 'ADMIN'),
     checkIfJoined,
-    catchAsync(async (req, res, next) => {
+    validate(CreateEventValidator),
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
         const { userId } = req;
-        const payload = await CreateEventValidator.validateAsync(req.body);
 
-        const result = await EventService.createNewEvent(payload, communityId, userId);
+        const result = await EventService.createNewEvent(req.body, communityId, userId);
 
         res.status(result.status).send(result.data);
     })
@@ -135,7 +139,7 @@ CommunityController.get(
     '/:communityId/posts',
     restrictTo('USER', 'ADMIN'),
     checkIfJoined,
-    catchAsync(async (req, res, next) => {
+    catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
 
         const result = await PostService.getAllPosts(communityId);
@@ -148,13 +152,12 @@ CommunityController.post(
     '/:communityId/posts',
     restrictTo('USER', 'ADMIN'),
     checkIfJoined,
-    catchAsync(async (req, res, next) => {
+    validate(CreatePostValidator),
+    catchAsync(async (req: RequestWithData, res: Response, next: NextFunction) => {
         const { communityId } = req.params;
         const authorId = req.userId;
 
-        const payload = await CreatePostValidator.validateAsync(req.body);
-
-        const result = await PostService.createNewPost(payload, communityId, authorId);
+        const result = await PostService.createNewPost(req.body, communityId, authorId);
 
         res.status(result.status).send(result.data);
     })

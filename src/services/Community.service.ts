@@ -1,10 +1,12 @@
-import { prisma } from '../config/db';
+import { community, post, usersOnCommunities } from '../config/db';
 
-import { ok, failure } from '../utils/SendResponse.util.js';
+import { CommunityInterface } from '../interfaces/Community.interface';
+
+import { failure, ok } from '../utils/SendResponse.util';
 
 export const CommunityService = {
     getAllCommunities: async () => {
-        const allCommunities = await prisma.community.findMany({
+        const allCommunities = await community.findMany({
             select: {
                 id: true,
                 name: true,
@@ -15,12 +17,12 @@ export const CommunityService = {
         return ok(allCommunities);
     },
 
-    createNewCommunity: async (name, description) => {
+    createNewCommunity: async (name: string, description: string) => {
         const oldCommunity = await CommunityService.getCommunityByName(name);
 
         if (oldCommunity) return failure('This community already exists.', 400);
 
-        const newCommunity = await prisma.community.create({
+        const newCommunity = await community.create({
             data: {
                 name,
                 description,
@@ -35,8 +37,8 @@ export const CommunityService = {
         return ok(newCommunity, 201);
     },
 
-    getCommunity: async (communityId) => {
-        const community = await prisma.community.findUnique({
+    getCommunity: async (communityId: string) => {
+        const communityFound = await community.findUnique({
             where: {
                 id: communityId,
             },
@@ -58,17 +60,17 @@ export const CommunityService = {
             },
         });
 
-        if (!community) return failure('No community found with that ID.');
+        if (!communityFound) return failure('No community found with that ID.');
 
-        return ok(community);
+        return ok(communityFound);
     },
 
-    deleteCommunityById: async (communityId) => {
-        const community = await CommunityService.getCommunityById(communityId);
+    deleteCommunityById: async (communityId: string) => {
+        const communityFound = await CommunityService.getCommunityById(communityId);
 
-        if (!community) return failure('No community found with that ID.');
+        if (!communityFound) return failure('No community found with that ID.');
 
-        const deletedCommunity = await prisma.community.delete({
+        const deletedCommunity = await community.delete({
             where: {
                 id: communityId,
             },
@@ -77,7 +79,7 @@ export const CommunityService = {
         return ok(deletedCommunity, 204);
     },
 
-    joinCommunity: async (userId, communityId) => {
+    joinCommunity: async (userId: string, communityId: string) => {
         const community = await CommunityService.getCommunityById(communityId);
 
         if (!community) return failure('No community found with that ID.');
@@ -86,7 +88,7 @@ export const CommunityService = {
 
         if (userInCommunity) return failure('You are already joined in this community.', 400);
 
-        const joinedUser = await prisma.usersOnCommunities.create({
+        const joinedUser = await usersOnCommunities.create({
             data: {
                 userId,
                 communityId,
@@ -101,7 +103,7 @@ export const CommunityService = {
         return ok(joinedUser);
     },
 
-    leaveCommunity: async (userId, communityId) => {
+    leaveCommunity: async (userId: string, communityId: string) => {
         const community = await CommunityService.getCommunityById(communityId);
 
         if (!community) return failure('No community found with that ID.');
@@ -110,7 +112,7 @@ export const CommunityService = {
 
         if (!userInCommunity) return failure('You are not joined in this community.', 400);
 
-        const leaveCommunity = await prisma.usersOnCommunities.delete({
+        const leaveCommunity = await usersOnCommunities.delete({
             where: {
                 communityUsers: { userId, communityId },
             },
@@ -124,8 +126,8 @@ export const CommunityService = {
         return ok(leaveCommunity, 204);
     },
 
-    getMyCommunities: async (userId) => {
-        const myCommunities = await prisma.community.findMany({
+    getMyCommunities: async (userId: string) => {
+        const myCommunities = await community.findMany({
             where: {
                 users: {
                     some: {
@@ -143,7 +145,7 @@ export const CommunityService = {
         return ok(myCommunities);
     },
 
-    topMostActiveCommunities: async (queryString) => {
+    topMostActiveCommunities: async (queryString: Record<string, string>) => {
         let filters = {};
 
         if (queryString.lastDays) {
@@ -158,7 +160,7 @@ export const CommunityService = {
             };
         }
 
-        const mostActiveCommunities = await prisma.post.groupBy({
+        const mostActiveCommunities = await post.groupBy({
             where: filters,
             by: ['communityId'],
             _count: {
@@ -174,7 +176,7 @@ export const CommunityService = {
 
         const idsOfCommunities = mostActiveCommunities.map((el) => el.communityId);
 
-        const mostActiveCommunitiesDetails = await prisma.community.findMany({
+        const mostActiveCommunitiesDetails = await community.findMany({
             where: {
                 id: {
                     in: idsOfCommunities,
@@ -191,7 +193,7 @@ export const CommunityService = {
     },
 
     topLargestCommunities: async () => {
-        const largestCommunities = await prisma.usersOnCommunities.groupBy({
+        const largestCommunities = await usersOnCommunities.groupBy({
             by: ['communityId'],
             _count: {
                 _all: true,
@@ -206,7 +208,7 @@ export const CommunityService = {
 
         const idsOfCommunities = largestCommunities.map((el) => el.communityId);
 
-        const largestCommunitiesDetails = await prisma.community.findMany({
+        const largestCommunitiesDetails = await community.findMany({
             where: {
                 id: {
                     in: idsOfCommunities,
@@ -222,8 +224,8 @@ export const CommunityService = {
         return ok(largestCommunitiesDetails);
     },
 
-    getCommunityById: async (id) => {
-        return prisma.community.findUnique({
+    getCommunityById: async (id: string): Promise<CommunityInterface | null> => {
+        return community.findUnique({
             where: {
                 id,
             },
@@ -235,8 +237,8 @@ export const CommunityService = {
         });
     },
 
-    getCommunityByName: async (name) => {
-        return prisma.community.findUnique({
+    getCommunityByName: async (name: string): Promise<CommunityInterface | null> => {
+        return community.findUnique({
             where: {
                 name,
             },
@@ -248,8 +250,8 @@ export const CommunityService = {
         });
     },
 
-    isUserJoined: async (userId, communityId) => {
-        return prisma.usersOnCommunities.findUnique({
+    isUserJoined: async (userId: string, communityId: string) => {
+        return usersOnCommunities.findUnique({
             where: {
                 communityUsers: { userId, communityId },
             },
