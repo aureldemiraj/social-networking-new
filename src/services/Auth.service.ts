@@ -8,8 +8,10 @@ import { user } from '../config/db';
 
 import { Event } from '../events/Events';
 
+import { TokenPayload } from '../interfaces/Auth.interface';
 import { CreateUserInterface, UserInterface } from '../interfaces/User.interface';
 
+import { AppError } from '../utils/AppError.util';
 import { ok, failure } from '../utils/SendResponse.util';
 
 export const AuthService = {
@@ -191,5 +193,24 @@ export const AuthService = {
                 passwordResetExpires: null,
             },
         });
+    },
+
+    verifyToken: async (token: string, roles: String[]) => {
+        const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+
+        if (!roles.includes(decoded.userRole))
+            throw new AppError('You do not have permission to perform this action!', 403);
+
+        return decoded;
+    },
+
+    checkEventOrganizer: async (eventOrganizer: string, userId: string, userRole: string) => {
+        if (!(eventOrganizer == userId || userRole == 'ADMIN'))
+            throw new AppError('You can only edit or delete your events', 403);
+    },
+
+    checkPostAuthor: async (postAuthor: string, userId: string, userRole: string) => {
+        if (!(postAuthor == userId || userRole == 'ADMIN'))
+            throw new AppError('You can only edit or delete your posts', 403);
     },
 };
