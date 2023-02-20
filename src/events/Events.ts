@@ -1,5 +1,5 @@
 import awaitEventEmitter from 'await-event-emitter';
 
-const EventEmitter = awaitEventEmitter.default;
+const EventEmitter = awaitEventEmitter;
 
 export const Event = new EventEmitter();
