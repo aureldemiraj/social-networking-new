@@ -1,8 +1,8 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { TransportOptions } from 'nodemailer';
 
 import { HOST, PORT, USERNAME, PASSWORD } from '../config/email.config';
 
-export const sendEmail = async (options) => {
+export const sendEmail = async (options: Email) => {
     const transporter = nodemailer.createTransport({
         host: HOST,
         port: PORT,
@@ -10,7 +10,7 @@ export const sendEmail = async (options) => {
             user: USERNAME,
             pass: PASSWORD,
         },
-    });
+    } as TransportOptions);
 
     const mailOptions = {
         from: 'Aurel Demiraj <aurel@gmail.com>',
