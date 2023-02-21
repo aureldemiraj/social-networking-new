@@ -1,10 +1,10 @@
-import { user } from '../config/db';
+import { UserModel } from '../config/db';
 
 import { ok, failure } from '../utils/SendResponse.util';
 
 export const UserService = {
     getAllUsers: async () => {
-        const users = await user.findMany({
+        const users = await UserModel.findMany({
             select: {
                 id: true,
                 fullName: true,
@@ -19,7 +19,7 @@ export const UserService = {
     },
 
     getUserbyId: async (id: string) => {
-        return user.findUnique({
+        return UserModel.findUnique({
             where: {
                 id,
             },
@@ -42,7 +42,7 @@ export const UserService = {
     },
 
     deleteUserById: async (userId: string) => {
-        const deletedUser = await user.delete({
+        const deletedUser = await UserModel.delete({
             where: {
                 id: userId,
             },

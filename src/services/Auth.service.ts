@@ -4,9 +4,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 import { JWT_EXPIRES_IN, JWT_SECRET } from '../config/auth.config';
-import { user } from '../config/db';
+import { UserModel } from '../config/db';
 
-import { Event } from '../events/Events';
+import { EmailEvent } from '../events/Email.event';
 
 import { TokenPayload } from '../interfaces/Auth.interface';
 import { CreateUserInterface, UserInterface } from '../interfaces/User.interface';
@@ -54,7 +54,7 @@ export const AuthService = {
             <br>If you didn't forget your password, please ignore this email!</p>`;
 
         try {
-            await Event.emit('sendEmail', {
+            await EmailEvent.emit('sendEmail', {
                 email: user.email,
                 subject: 'Your password reset token (valid for 10 min)',
                 message,
@@ -89,7 +89,7 @@ export const AuthService = {
 
         const { email, fullName, birthDate, education } = payload;
 
-        const newUser: Omit<UserInterface, 'password'> = await user.create({
+        const newUser: Omit<UserInterface, 'password'> = await UserModel.create({
             data: {
                 email: email.toLowerCase(),
                 fullName,
@@ -109,7 +109,7 @@ export const AuthService = {
     },
 
     getUserbyEmail: async (email: string): Promise<Omit<UserInterface, 'fullName'> | null> => {
-        return user.findUnique({
+        return UserModel.findUnique({
             where: {
                 email,
             },
@@ -150,7 +150,7 @@ export const AuthService = {
         passwordResetToken: string | null,
         passwordResetExpires: Date | null
     ) => {
-        await user.update({
+        await UserModel.update({
             where: {
                 email: userEmail,
             },
@@ -164,7 +164,7 @@ export const AuthService = {
     getUserByResetToken: async (passwordResetToken: string) => {
         const hashedPassword = crypto.createHash('sha256').update(passwordResetToken).digest('hex');
 
-        const userFound: Pick<UserInterface, 'id' | 'role'> | null = await user.findFirst({
+        const user: Pick<UserInterface, 'id' | 'role'> | null = await UserModel.findFirst({
             where: {
                 passwordResetToken: hashedPassword,
                 passwordResetExpires: {
@@ -177,13 +177,13 @@ export const AuthService = {
             },
         });
 
-        return userFound;
+        return user;
     },
 
     updateUserPassword: async (userId: string, password: string) => {
         const encryptedPassword = await bcrypt.hash(password, 12);
 
-        await user.update({
+        await UserModel.update({
             where: {
                 id: userId,
             },

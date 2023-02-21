@@ -1,4 +1,4 @@
-import { community, post, usersOnCommunities } from '../config/db';
+import { CommunityModel, PostModel, UsersOnCommunitiesModel } from '../config/db';
 
 import { CommunityInterface } from '../interfaces/Community.interface';
 
@@ -6,7 +6,7 @@ import { failure, ok } from '../utils/SendResponse.util';
 
 export const CommunityService = {
     getAllCommunities: async () => {
-        const allCommunities = await community.findMany({
+        const allCommunities = await CommunityModel.findMany({
             select: {
                 id: true,
                 name: true,
@@ -22,7 +22,7 @@ export const CommunityService = {
 
         if (oldCommunity) return failure('This community already exists.', 400);
 
-        const newCommunity = await community.create({
+        const newCommunity = await CommunityModel.create({
             data: {
                 name,
                 description,
@@ -38,7 +38,7 @@ export const CommunityService = {
     },
 
     getCommunity: async (communityId: string) => {
-        const communityFound = await community.findUnique({
+        const community = await CommunityModel.findUnique({
             where: {
                 id: communityId,
             },
@@ -60,17 +60,17 @@ export const CommunityService = {
             },
         });
 
-        if (!communityFound) return failure('No community found with that ID.');
+        if (!community) return failure('No community found with that ID.');
 
-        return ok(communityFound);
+        return ok(community);
     },
 
     deleteCommunityById: async (communityId: string) => {
-        const communityFound = await CommunityService.getCommunityById(communityId);
+        const community = await CommunityService.getCommunityById(communityId);
 
-        if (!communityFound) return failure('No community found with that ID.');
+        if (!community) return failure('No community found with that ID.');
 
-        const deletedCommunity = await community.delete({
+        const deletedCommunity = await CommunityModel.delete({
             where: {
                 id: communityId,
             },
@@ -88,7 +88,7 @@ export const CommunityService = {
 
         if (userInCommunity) return failure('You are already joined in this community.', 400);
 
-        const joinedUser = await usersOnCommunities.create({
+        const joinedUser = await UsersOnCommunitiesModel.create({
             data: {
                 userId,
                 communityId,
@@ -112,7 +112,7 @@ export const CommunityService = {
 
         if (!userInCommunity) return failure('You are not joined in this community.', 400);
 
-        const leaveCommunity = await usersOnCommunities.delete({
+        const leaveCommunity = await UsersOnCommunitiesModel.delete({
             where: {
                 communityUsers: { userId, communityId },
             },
@@ -127,7 +127,7 @@ export const CommunityService = {
     },
 
     getMyCommunities: async (userId: string) => {
-        const myCommunities = await community.findMany({
+        const myCommunities = await CommunityModel.findMany({
             where: {
                 users: {
                     some: {
@@ -160,7 +160,7 @@ export const CommunityService = {
             };
         }
 
-        const mostActiveCommunities = await post.groupBy({
+        const mostActiveCommunities = await PostModel.groupBy({
             where: filters,
             by: ['communityId'],
             _count: {
@@ -176,7 +176,7 @@ export const CommunityService = {
 
         const idsOfCommunities = mostActiveCommunities.map((el) => el.communityId);
 
-        const mostActiveCommunitiesDetails = await community.findMany({
+        const mostActiveCommunitiesDetails = await CommunityModel.findMany({
             where: {
                 id: {
                     in: idsOfCommunities,
@@ -193,7 +193,7 @@ export const CommunityService = {
     },
 
     topLargestCommunities: async () => {
-        const largestCommunities = await usersOnCommunities.groupBy({
+        const largestCommunities = await UsersOnCommunitiesModel.groupBy({
             by: ['communityId'],
             _count: {
                 _all: true,
@@ -208,7 +208,7 @@ export const CommunityService = {
 
         const idsOfCommunities = largestCommunities.map((el) => el.communityId);
 
-        const largestCommunitiesDetails = await community.findMany({
+        const largestCommunitiesDetails = await CommunityModel.findMany({
             where: {
                 id: {
                     in: idsOfCommunities,
@@ -225,7 +225,7 @@ export const CommunityService = {
     },
 
     getCommunityById: async (id: string): Promise<CommunityInterface | null> => {
-        return community.findUnique({
+        return CommunityModel.findUnique({
             where: {
                 id,
             },
@@ -238,7 +238,7 @@ export const CommunityService = {
     },
 
     getCommunityByName: async (name: string): Promise<CommunityInterface | null> => {
-        return community.findUnique({
+        return CommunityModel.findUnique({
             where: {
                 name,
             },
@@ -251,7 +251,7 @@ export const CommunityService = {
     },
 
     isUserJoined: async (userId: string, communityId: string) => {
-        return usersOnCommunities.findUnique({
+        return UsersOnCommunitiesModel.findUnique({
             where: {
                 communityUsers: { userId, communityId },
             },

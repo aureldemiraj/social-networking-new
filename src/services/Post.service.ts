@@ -1,4 +1,4 @@
-import { post as PostModel } from '../config/db';
+import { PostModel } from '../config/db';
 
 import { PostInterface } from '../interfaces/Post.interface';
 

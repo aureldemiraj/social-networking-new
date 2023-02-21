@@ -1,4 +1,4 @@
-import { event as EventModel, eventSubscribers, user as UserModel } from '../config/db';
+import { EventModel, EventSubscribersModel, UserModel } from '../config/db';
 
 import { EventInterface } from '../interfaces/Event.interface';
 
@@ -221,7 +221,7 @@ export const EventService = {
 
         if (userEvent) return failure('You are already subscribed to this event.', 400);
 
-        const subscribedEvent = await eventSubscribers.create({
+        const subscribedEvent = await EventSubscribersModel.create({
             data: {
                 eventId,
                 subscriberId,
@@ -240,7 +240,7 @@ export const EventService = {
 
         if (!userEvent) return failure("You aren't subscribed to this event.", 400);
 
-        const unsubscribedEvent = await eventSubscribers.delete({
+        const unsubscribedEvent = await EventSubscribersModel.delete({
             where: {
                 eventSubscribers: { eventId, subscriberId },
             },
@@ -273,7 +273,7 @@ export const EventService = {
     },
 
     isUserSubscribed: async (subscriberId: string, eventId: string) => {
-        return eventSubscribers.findUnique({
+        return EventSubscribersModel.findUnique({
             where: {
                 eventSubscribers: { eventId, subscriberId },
             },
