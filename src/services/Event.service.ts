@@ -5,6 +5,7 @@ import { EventInterface } from '../interfaces/Event.interface';
 import { CommunityService } from './Community.service';
 
 import { ok, failure } from '../utils/SendResponse.util';
+import { EmitEntityEvent } from '../utils/EmitEntityEvent.util';
 
 export const EventService = {
     getAllEvents: async () => {
@@ -90,6 +91,8 @@ export const EventService = {
                 communityId: true,
             },
         });
+
+        EmitEntityEvent('create', 'Event', newEvent);
 
         return ok(newEvent, 201);
     },
@@ -195,6 +198,8 @@ export const EventService = {
             },
         });
 
+        EmitEntityEvent('update', 'Event', updatedEvent);
+
         return ok(updatedEvent);
     },
 
@@ -208,6 +213,8 @@ export const EventService = {
                 id,
             },
         });
+
+        EmitEntityEvent('delete', 'Event', deletedEvent);
 
         return ok(deletedEvent, 204);
     },
@@ -228,6 +235,8 @@ export const EventService = {
             },
         });
 
+        EmitEntityEvent('create', 'EventSubscriber', subscribedEvent);
+
         return ok(subscribedEvent);
     },
 
@@ -245,6 +254,8 @@ export const EventService = {
                 eventSubscribers: { eventId, subscriberId },
             },
         });
+
+        EmitEntityEvent('delete', 'EventSubscriber', unsubscribedEvent);
 
         return ok(unsubscribedEvent);
     },

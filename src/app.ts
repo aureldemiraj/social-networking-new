@@ -1,16 +1,24 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
-import cors from 'cors';
-
-import { errorMiddleware } from './middlewares/Error.middleware';
-
-import { routes } from './routes';
-
-import { AppError } from './utils/AppError.util';
-
 export const app = express();
 
-app.use(cors());
+import rateLimit from 'express-rate-limit';
+import cors from 'cors';
+import { Server } from 'socket.io';
+import { errorMiddleware } from './middlewares/Error.middleware';
+import { routes } from './routes';
+import { createServer } from 'http';
+import { AppError } from './utils/AppError.util';
+import { resolve } from 'path';
+import { CommunityHandler } from './websocket-handlers/Community.handler';
+
+const httpServer = createServer(app);
+
+const io = new Server(httpServer);
+
+app.get('/', (req, res) => {
+    res.sendFile(resolve(__dirname, '../public/index.html'));
+    //   res.send("<h1>Hello world</h1>");
+});
 
 const limiter = rateLimit({
     max: 100,
@@ -28,3 +36,6 @@ app.all('*', (req, res, next) => {
 });
 
 app.use(errorMiddleware);
+
+CommunityHandler(io);
+export { httpServer, io };
