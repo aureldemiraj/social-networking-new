@@ -1,6 +1,7 @@
 import { CommunityModel, PostModel, UsersOnCommunitiesModel } from '../config/db';
 
 import { CommunityInterface } from '../interfaces/Community.interface';
+import { EmitEntityEvent } from '../utils/EmitEntityEvent.util';
 
 import { failure, ok } from '../utils/SendResponse.util';
 
@@ -33,6 +34,8 @@ export const CommunityService = {
                 description: true,
             },
         });
+
+        EmitEntityEvent('create', 'Community', newCommunity);
 
         return ok(newCommunity, 201);
     },
@@ -76,6 +79,8 @@ export const CommunityService = {
             },
         });
 
+        EmitEntityEvent('delete', 'Community', deletedCommunity);
+
         return ok(deletedCommunity, 204);
     },
 
@@ -100,6 +105,8 @@ export const CommunityService = {
             },
         });
 
+        EmitEntityEvent('create', 'UserCommunity', joinedUser);
+
         return ok(joinedUser);
     },
 
@@ -122,6 +129,8 @@ export const CommunityService = {
                 joinedAt: true,
             },
         });
+
+        EmitEntityEvent('delete', 'UserCommunity', leaveCommunity);
 
         return ok(leaveCommunity, 204);
     },
